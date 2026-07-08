@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Trading Journal Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg-void:#090c11;
+  --bg-panel:#11151d;
+  --bg-elevated:#161b26;
+  --bg-elevated-2:#1c2230;
+  --border:rgba(255,255,255,.07);
+  --border-strong:rgba(255,255,255,.14);
+  --accent:#00d9b5;
+  --accent-dim:rgba(0,217,181,.14);
+  --accent-glow:rgba(0,217,181,.35);
+  --bull:#26d07c;
+  --bull-dim:rgba(38,208,124,.14);
+  --bear:#ff4d6d;
+  --bear-dim:rgba(255,77,109,.14);
+  --warn:#f5b942;
+  --warn-dim:rgba(245,185,66,.14);
+  --text-1:#f5f6fa;
+  --text-2:#b7bfd4;
+  --text-3:#838cab;
+  --radius-sm:8px;
+  --radius:14px;
+  --radius-lg:20px;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --shadow-soft:0 8px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{color-scheme:dark;}
+body{
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(0,217,181,.07), transparent 60%),
+    radial-gradient(1000px 500px at 100% 0%, rgba(255,77,109,.05), transparent 55%),
+    var(--bg-void);
+  color:var(--text-1);
+  font-family:var(--font-body);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent-glow);color:#04140f;}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:10px;}
+::-webkit-scrollbar-thumb:hover{background:var(--text-3);}
+a{color:inherit;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;color:var(--text-1);}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001s !important;transition-duration:.001s !important;}}
+
+.glass{
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+  border:1px solid var(--border);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  border-radius:var(--radius);
+}
+
+/* ============ LAYOUT ============ */
+.app{max-width:1440px;margin:0 auto;padding:0 22px 60px;}
+header.topbar{
+  position:sticky;top:0;z-index:40;
+  padding:16px 22px 0;
+  background:linear-gradient(180deg,var(--bg-void) 78%,transparent);
+}
+.topbar-inner{max-width:1440px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:14px;}
+.brand{display:flex;align-items:center;gap:11px;}
+.brand-mark{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),#00a88c);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 24px var(--accent-glow);
+  flex-shrink:0;
+}
+.brand-mark svg{width:20px;height:20px;}
+.brand-text h1{font-family:var(--font-display);font-size:18px;font-weight:700;letter-spacing:.2px;}
+.brand-text span{font-size:11px;color:var(--text-3);font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase;}
+
+.topbar-actions{display:flex;align-items:center;gap:8px;}
+.icon-btn{
+  width:38px;height:38px;border-radius:10px;border:1px solid var(--border);
+  background:var(--bg-elevated);color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;transition:.15s;
+}
+.icon-btn:hover{color:var(--text-1);border-color:var(--border-strong);background:var(--bg-elevated-2);}
+.icon-btn svg{width:17px;height:17px;}
+.btn{
+  border-radius:10px;border:1px solid var(--border);background:var(--bg-elevated);
+  color:var(--text-1);padding:9px 16px;font-size:13.5px;font-weight:600;
+  display:inline-flex;align-items:center;gap:8px;transition:.15s;white-space:nowrap;
+}
+.btn:hover{border-color:var(--border-strong);background:var(--bg-elevated-2);}
+.btn svg{width:15px;height:15px;flex-shrink:0;}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),#00a88c);
+  color:#04140f;border:none;box-shadow:0 4px 18px rgba(0,217,181,.25);
+}
+.btn-primary:hover{filter:brightness(1.08);}
+.btn-danger{background:var(--bear-dim);border-color:rgba(255,77,109,.35);color:#ff8fa3;}
+.btn-danger:hover{background:rgba(255,77,109,.22);}
+.btn-ghost{background:transparent;border-color:transparent;}
+.btn-ghost:hover{background:var(--bg-elevated);}
+.btn-sm{padding:6px 11px;font-size:12.5px;border-radius:8px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ticker */
+.ticker-wrap{
+  overflow:hidden;border-radius:12px;border:1px solid var(--border);
+  background:var(--bg-panel);margin-top:2px;position:relative;
+}
+.ticker-wrap:before,.ticker-wrap:after{content:'';position:absolute;top:0;bottom:0;width:40px;z-index:2;pointer-events:none;}
+.ticker-wrap:before{left:0;background:linear-gradient(90deg,var(--bg-panel),transparent);}
+.ticker-wrap:after{right:0;background:linear-gradient(-90deg,var(--bg-panel),transparent);}
+.ticker-track{display:flex;gap:46px;white-space:nowrap;padding:9px 0;animation:tickerscroll 32s linear infinite;width:max-content;}
+.ticker-wrap:hover .ticker-track{animation-play-state:paused;}
+@keyframes tickerscroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.ticker-item{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12.5px;color:var(--text-2);padding:0 4px;}
+.ticker-item b{color:var(--text-1);font-weight:600;}
+.ticker-item .up{color:var(--bull);}
+.ticker-item .down{color:var(--bear);}
+.ticker-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.6;}
+
+/* nav */
+nav.tabs{display:flex;gap:6px;margin:18px 0 22px;overflow-x:auto;padding-bottom:2px;}
+nav.tabs::-webkit-scrollbar{display:none;}
+.tab-btn{
+  flex-shrink:0;padding:10px 16px;border-radius:10px;border:1px solid transparent;
+  background:transparent;color:var(--text-2);font-size:13.5px;font-weight:600;
+  display:flex;align-items:center;gap:7px;transition:.15s;
+}
+.tab-btn svg{width:15px;height:15px;}
+.tab-btn:hover{color:var(--text-1);background:var(--bg-elevated);}
+.tab-btn.active{color:#04140f;background:var(--accent);box-shadow:0 4px 16px var(--accent-glow);}
+.view{display:none;animation:fadein .25s ease;}
+.view.active{display:block;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* stat cards */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-bottom:20px;}
+.stat-card{padding:16px 17px;position:relative;overflow:hidden;}
+.stat-card .lbl{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:8px;}
+.stat-card .val{font-family:var(--font-mono);font-size:23px;font-weight:700;letter-spacing:-.3px;}
+.stat-card .sub{font-size:11.5px;color:var(--text-3);margin-top:5px;}
+.stat-card.accent .val{color:var(--accent);}
+.stat-card.bull .val{color:var(--bull);}
+.stat-card.bear .val{color:var(--bear);}
+.stat-card.warn .val{color:var(--warn);}
+
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:26px 0 14px;flex-wrap:wrap;gap:10px;}
+.section-title h2{font-family:var(--font-display);font-size:17px;font-weight:600;}
+.section-title .hint{font-size:12px;color:var(--text-3);}
+
+.grid-2{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+.chart-card{padding:18px;height:320px;display:flex;flex-direction:column;}
+.chart-card h3{font-size:13.5px;font-weight:600;margin-bottom:12px;color:var(--text-1);display:flex;align-items:center;gap:8px;}
+.chart-card h3 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);}
+.chart-card canvas{flex:1;width:100% !important;max-height:255px;}
+.chart-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:12.5px;text-align:center;padding:20px;}
+
+/* filters */
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;padding:14px;margin-bottom:16px;align-items:center;}
+.filter-bar input,.filter-bar select{
+  background:var(--bg-elevated);border:1px solid var(--border);border-radius:9px;
+  padding:8px 11px;font-size:12.8px;color:var(--text-1);
+}
+.filter-bar input[type=search]{flex:1;min-width:160px;}
+.filter-bar select{cursor:pointer;}
+.filter-bar .fspacer{flex:1;}
+
+/* table */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;min-width:960px;}
+thead th{
+  text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);
+  padding:12px 14px;background:var(--bg-panel);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;
+}
+tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text-1);}
+tbody tr{transition:.12s;}
+tbody tr:hover{background:rgba(255,255,255,.02);}
+tbody tr:last-child td{border-bottom:none;}
+.mono{font-family:var(--font-mono);}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
+.badge.win{background:var(--bull-dim);color:var(--bull);}
+.badge.loss{background:var(--bear-dim);color:var(--bear);}
+.badge.be{background:var(--warn-dim);color:var(--warn);}
+.badge.open{background:rgba(255,255,255,.08);color:var(--text-2);}
+.pill{display:inline-block;padding:3px 9px;border-radius:7px;background:var(--bg-elevated-2);font-size:11px;color:var(--text-2);margin:1px 3px 1px 0;border:1px solid var(--border);}
+.dir-badge{font-weight:700;font-size:11.5px;}
+.dir-badge.long{color:var(--bull);}
+.dir-badge.short{color:var(--bear);}
+.row-actions{display:flex;gap:6px;}
+.empty-state{padding:60px 20px;text-align:center;color:var(--text-3);}
+.empty-state svg{width:44px;height:44px;margin-bottom:12px;opacity:.4;}
+.empty-state h3{color:var(--text-2);font-size:15px;margin-bottom:6px;}
+.empty-state p{font-size:12.8px;max-width:340px;margin:0 auto;}
+
+/* analytics tables */
+.mini-table{width:100%;border-collapse:collapse;}
+.mini-table th{text-align:left;font-size:10.5px;text-transform:uppercase;color:var(--text-3);padding:8px 10px;border-bottom:1px solid var(--border);}
+.mini-table td{padding:9px 10px;font-size:12.5px;border-bottom:1px solid var(--border);}
+.mini-table tr:last-child td{border-bottom:none;}
+.card-pad{padding:18px;}
+
+/* AI */
+.ai-block{padding:18px;margin-bottom:14px;}
+.ai-block h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+.ai-block h3 .ico{width:26px;height:26px;border-radius:8px;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ai-block h3 .ico svg{width:14px;height:14px;}
+.ai-block p, .ai-block li{font-size:13px;color:var(--text-2);line-height:1.65;}
+.ai-block ul{padding-left:18px;margin-top:6px;}
+.ai-block ul li{margin-bottom:4px;}
+.ai-block b{color:var(--text-1);}
+.ai-empty{text-align:center;padding:50px 20px;color:var(--text-3);}
+
+/* modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(4,6,10,.72);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;z-index:100;padding:18px;
+}
+.modal-overlay.active{display:flex;}
+.modal{
+  width:100%;max-width:640px;max-height:90vh;overflow-y:auto;
+  background:var(--bg-panel);border:1px solid var(--border-strong);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-soft);animation:modalin .2s ease;
+}
+@keyframes modalin{from{opacity:0;transform:scale(.96) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal.narrow{max-width:420px;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg-panel);z-index:2;}
+.modal-head h2{font-family:var(--font-display);font-size:17px;font-weight:600;}
+.modal-body{padding:20px;}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 20px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--bg-panel);}
+
+.field{margin-bottom:15px;}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--text-1);margin-bottom:7px;letter-spacing:.2px;}
+.field input,.field select,.field textarea{
+  width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:9px;
+  padding:10px 12px;font-size:13.5px;transition:.15s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field textarea{resize:vertical;min-height:80px;font-family:var(--font-body);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media (max-width:520px){.field-row,.field-row3{grid-template-columns:1fr;}}
+.rr-preview{font-family:var(--font-mono);font-size:12px;color:var(--accent);margin-top:6px;}
+.seg{display:flex;gap:8px;}
+.seg button{flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-2);font-weight:700;font-size:13px;transition:.15s;}
+.seg button.sel-long.active{background:var(--bull-dim);border-color:var(--bull);color:var(--bull);}
+.seg button.sel-short.active{background:var(--bear-dim);border-color:var(--bear);color:var(--bear);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{padding:8px 13px;border-radius:20px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-2);font-size:12.5px;font-weight:600;transition:.15s;}
+.sys-tag{display:inline-flex;align-items:center;gap:8px;padding:8px 8px 8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-1);font-size:12.8px;font-weight:600;}
+.rule-list{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+.rule-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--bg-elevated);}
+.rule-item .num{color:var(--accent);font-family:var(--font-mono);font-weight:700;font-size:12.5px;flex-shrink:0;padding-top:1px;}
+.rule-item .txt{flex:1;color:var(--text-1);font-size:13.5px;line-height:1.55;white-space:pre-wrap;}
+.rule-item .rule-rm{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:rgba(255,77,109,.16);color:#ff8fa3;border:none;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;}
+.rule-item .rule-rm:hover{background:rgba(255,77,109,.3);}
+.sys-tag .sys-rm{width:20px;height:20px;border-radius:50%;background:rgba(255,77,109,.16);color:#ff8fa3;border:none;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sys-tag .sys-rm:hover{background:rgba(255,77,109,.3);}
+.chip.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+.status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+@media (max-width:520px){.status-grid{grid-template-columns:repeat(2,1fr);}}
+.status-grid button{padding:10px 6px;border-radius:9px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-2);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+.status-grid button.active[data-s="win"]{background:var(--bull-dim);border-color:var(--bull);color:var(--bull);}
+.status-grid button.active[data-s="loss"]{background:var(--bear-dim);border-color:var(--bear);color:var(--bear);}
+.status-grid button.active[data-s="be"]{background:var(--warn-dim);border-color:var(--warn);color:var(--warn);}
+.status-grid button.active[data-s="open"]{background:rgba(255,255,255,.1);border-color:var(--border-strong);color:var(--text-1);}
+
+/* screenshots */
+.shot-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.shot-tab{padding:7px 12px;border-radius:8px;font-size:11.5px;font-weight:600;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-2);}
+.shot-tab.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);}
+.shot-pane{display:none;}
+.shot-pane.active{display:block;}
+.dropzone{
+  border:1.5px dashed var(--border-strong);border-radius:12px;padding:26px 14px;text-align:center;
+  color:var(--text-3);font-size:12.5px;transition:.15s;cursor:pointer;
+}
+.dropzone.drag{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
+.dropzone svg{width:26px;height:26px;margin-bottom:8px;opacity:.6;}
+.url-row{display:flex;gap:8px;}
+.thumb-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+.quick-add-row{display:flex;gap:8px;margin-top:10px;}
+.quick-add-row input{
+  flex:1;background:var(--bg-elevated);border:1px solid var(--border);border-radius:9px;
+  padding:8px 11px;font-size:12.8px;color:var(--text-1);
+}
+.quick-add-row input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+.thumb{position:relative;width:78px;height:78px;border-radius:9px;overflow:hidden;border:1px solid var(--border);cursor:pointer;}
+.thumb img{width:100%;height:100%;object-fit:cover;}
+.thumb .rm{position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;border:none;}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;display:none;align-items:center;justify-content:center;padding:30px;}
+.lightbox.active{display:flex;}
+.lightbox img{max-width:100%;max-height:100%;border-radius:10px;}
+.lightbox .close-lb{position:absolute;top:20px;right:24px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;border:none;font-size:20px;}
+
+/* toasts */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px;max-width:320px;}
+.toast{
+  background:var(--bg-elevated-2);border:1px solid var(--border-strong);border-radius:10px;
+  padding:12px 15px;font-size:12.8px;box-shadow:var(--shadow-soft);animation:toastin .2s ease;display:flex;align-items:center;gap:9px;
+}
+@keyframes toastin{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.toast .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.toast.err .dot{background:var(--bear);}
+.toast.ok .dot{background:var(--bull);}
+
+.confirm-box p{font-size:13px;color:var(--text-2);line-height:1.6;}
+
+.data-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+.data-card{padding:18px;text-align:left;}
+.data-card .dc-ico{width:36px;height:36px;border-radius:10px;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.data-card .dc-ico svg{width:18px;height:18px;}
+.data-card h4{font-size:14px;margin-bottom:5px;}
+.data-card p{font-size:12px;color:var(--text-3);margin-bottom:12px;line-height:1.5;}
+.storage-bar{height:6px;border-radius:4px;background:var(--bg-elevated-2);overflow:hidden;margin-top:6px;}
+.storage-bar > div{height:100%;background:linear-gradient(90deg,var(--accent),#00a88c);}
+
+footer.app-foot{text-align:center;padding:30px 0 10px;color:var(--text-3);font-size:11.5px;}
+
+@media (max-width:640px){
+  .app{padding:0 12px 40px;}
+  header.topbar{padding:12px 12px 0;}
+  .stat-card .val{font-size:19px;}
+  .modal-body{padding:16px;}
+  table{min-width:760px;}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 17L9 11L13 15L21 6" stroke="#04140f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 6H21V12" stroke="#04140f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>Trading Journal</h1>
+        <span>Pro Edition</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="btnUndo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10h10a5 5 0 015 5v0a5 5 0 01-5 5H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 6l-4 4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="icon-btn" id="btnRedo" title="Redo (Ctrl+Y)"><svg viewBox="0 0 24 24" fill="none"><path d="M21 10H11a5 5 0 00-5 5v0a5 5 0 005 5h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="btn btn-primary" id="btnNewTrade">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        Yangi savdo
+      </button>
+    </div>
+  </div>
+  <div class="ticker-wrap"><div class="ticker-track" id="tickerTrack"></div></div>
+</header>
+
+<div class="app">
+  <nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M6 15l4-5 3 3 5-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Dashboard</button>
+    <button class="tab-btn" data-view="rules"><svg viewBox="0 0 24 24" fill="none"><path d="M9 2h6l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 9l1.5 1.5L14 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 15h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Qoidalarim</button>
+    <button class="tab-btn" data-view="trades"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 4v16" stroke="currentColor" stroke-width="2"/></svg>Savdolar</button>
+    <button class="tab-btn" data-view="analytics"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="4" height="10" rx="1" stroke="currentColor" stroke-width="2"/><rect x="10" y="5" width="4" height="15" rx="1" stroke="currentColor" stroke-width="2"/><rect x="16" y="13" width="4" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>Analytics</button>
+    <button class="tab-btn" data-view="ai"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>AI Tahlil</button>
+    <button class="tab-btn" data-view="data"><svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Import/Export</button>
+    <button class="tab-btn" data-view="settings"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Sozlamalar</button>
+  </nav>
+
+  <!-- ================= DASHBOARD ================= -->
+  <section class="view active" id="view-dashboard">
+    <div class="stat-grid" id="statGrid"></div>
+    <div class="grid-2">
+      <div class="glass chart-card"><h3><span class="dot"></span>Equity Curve</h3><div id="wrapEquity"><canvas id="chartEquity"></canvas></div></div>
+      <div class="glass chart-card"><h3><span class="dot"></span>G'alaba / Yo'qotish</h3><div id="wrapPie"><canvas id="chartPie"></canvas></div></div>
+    </div>
+    <div class="grid-2" style="margin-top:14px;">
+      <div class="glass chart-card"><h3><span class="dot"></span>Profit Curve (savdo bo'yicha)</h3><div id="wrapProfit"><canvas id="chartProfit"></canvas></div></div>
+      <div class="glass chart-card"><h3><span class="dot"></span>RR Distribution</h3><div id="wrapRR"><canvas id="chartRR"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- ================= RULES / PRINCIPLES ================= -->
+  <section class="view" id="view-rules">
+    <div class="section-title"><h2>Savdo qoidalarim va prinsiplarim</h2><span class="hint">Bu bo'lim shaxsiy — savdo tizimi ro'yxatiga aloqasi yo'q</span></div>
+
+    <div class="glass card-pad" style="max-width:760px;margin-bottom:18px;">
+      <label style="font-size:12.5px;color:var(--text-2);font-weight:600;display:block;margin-bottom:10px;">Aniq qoidalar ro'yxati</label>
+      <div class="url-row">
+        <input type="text" id="newRuleInput" placeholder="Yangi qoida yozing... (masalan: Yangiliklar oldidan pozitsiya ochmayman)">
+        <button type="button" class="btn btn-sm btn-primary" id="addRuleBtn">Qo'shish</button>
+      </div>
+      <div class="rule-list" id="ruleList"></div>
+      <p id="ruleEmpty" style="display:none;color:var(--text-3);font-size:12.8px;margin-top:12px;">Hali qoida qo'shilmagan. Yuqoridagi maydondan birinchi qoidangizni kiriting.</p>
+    </div>
+
+    <div class="glass card-pad" style="max-width:760px;">
+      <label style="font-size:12.5px;color:var(--text-2);font-weight:600;display:block;margin-bottom:10px;">Umumiy tamoyillar (erkin matn)</label>
+      <textarea id="principlesNote" rows="10" placeholder="Bu yerga treding falsafangiz, prinsiplaringiz va o'zingizga eslatmalarni erkin shaklda yozing..." style="width:100%;resize:vertical;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.6;color:var(--text-1);font-family:inherit;"></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px;flex-wrap:wrap;">
+        <span id="principlesSavedHint" style="font-size:11.5px;color:var(--text-3);"></span>
+        <button type="button" class="btn btn-sm btn-primary" id="savePrinciplesBtn">Saqlash</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TRADES ================= -->
+  <section class="view" id="view-trades">
+    <div class="glass filter-bar">
+      <input type="search" id="fSearch" placeholder="Qidiruv: juftlik, izoh, tizim, sessiya...">
+      <select id="fSession"><option value="">Barcha sessiyalar</option><option>Asian</option><option>London</option><option>New York</option></select>
+      <select id="fSystem"><option value="">Barcha tizimlar</option></select>
+      <select id="fStatus"><option value="">Barcha statuslar</option><option value="win">Win</option><option value="loss">Loss</option><option value="be">Break Even</option><option value="open">Open</option></select>
+      <select id="fMonth"><option value="">Barcha oylar</option></select>
+      <div class="fspacer"></div>
+      <button class="btn btn-sm" id="btnClearFilters">Tozalash</button>
+    </div>
+    <div class="glass table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Sana</th><th>Juftlik</th><th>Yo'nalish</th><th>RR</th><th>P/L</th><th>Status</th><th>Tizim</th><th>Sessiya</th><th>Eslatma</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="tradeTbody"></tbody>
+      </table>
+      <div class="empty-state" id="tradeEmpty" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 9h18" stroke="currentColor" stroke-width="1.5"/></svg>
+        <h3>Savdolar topilmadi</h3>
+        <p>Filtrlarni tozalang yoki "Yangi savdo" tugmasi orqali birinchi savdongizni qo'shing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ANALYTICS ================= -->
+  <section class="view" id="view-analytics">
+    <div class="section-title"><h2>Vaqt bo'yicha statistika</h2></div>
+    <div class="grid-2" id="periodStatsGrid"></div>
+
+    <div class="section-title"><h2>Grafiklar</h2></div>
+    <div class="grid-3">
+      <div class="glass chart-card"><h3><span class="dot"></span>Haftalik natija</h3><div id="wrapWeekly"><canvas id="chartWeekly"></canvas></div></div>
+      <div class="glass chart-card"><h3><span class="dot"></span>Oylik natija</h3><div id="wrapMonthly"><canvas id="chartMonthly"></canvas></div></div>
+      <div class="glass chart-card"><h3><span class="dot"></span>Sessiya statistikasi</h3><div id="wrapSession"><canvas id="chartSession"></canvas></div></div>
+    </div>
+
+    <div class="section-title"><h2>Tizim bo'yicha</h2></div>
+    <div class="grid-2">
+      <div class="glass card-pad"><div class="table-wrap" style="border:none;"><table class="mini-table" id="tblSystem"><thead><tr><th>Tizim</th><th>Soni</th><th>Win</th><th>Loss</th><th>Win Rate</th><th>P/L</th><th>Avg RR</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="glass card-pad"><div class="table-wrap" style="border:none;"><table class="mini-table" id="tblCombo"><thead><tr><th>Kombinatsiya</th><th>Soni</th><th>Win</th><th>Loss</th><th>Win Rate</th><th>P/L</th><th>Avg RR</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+
+    <div class="section-title"><h2>Sessiya / Yo'nalish / Juftlik</h2></div>
+    <div class="grid-3">
+      <div class="glass card-pad"><div class="table-wrap" style="border:none;"><table class="mini-table" id="tblSession"><thead><tr><th>Sessiya</th><th>Soni</th><th>Win Rate</th><th>P/L</th><th>Avg RR</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="glass card-pad"><div class="table-wrap" style="border:none;"><table class="mini-table" id="tblDirection"><thead><tr><th>Yo'nalish</th><th>Soni</th><th>Win Rate</th><th>P/L</th><th>Avg RR</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="glass card-pad"><div class="table-wrap" style="border:none;"><table class="mini-table" id="tblPair"><thead><tr><th>Juftlik</th><th>Soni</th><th>Win Rate</th><th>P/L</th><th>Avg RR</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+  </section>
+
+  <!-- ================= AI ================= -->
+  <section class="view" id="view-ai">
+    <div class="section-title"><h2>AI Analysis</h2><span class="hint">Barcha tahlil lokal holda, internetsiz hisoblanadi</span></div>
+    <div id="aiContainer"></div>
+  </section>
+
+  <!-- ================= DATA ================= -->
+  <section class="view" id="view-data">
+    <div class="section-title"><h2>Export</h2></div>
+    <div class="data-grid">
+      <div class="glass data-card">
+        <div class="dc-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M7 18h10M7 14h10M9 6h6M9 10h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="2"/></svg></div>
+        <h4>JSON</h4><p>To'liq zaxira nusxa, keyinchalik import qilish mumkin.</p>
+        <button class="btn btn-sm" id="expJson">Yuklab olish</button>
+      </div>
+      <div class="glass data-card">
+        <div class="dc-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <h4>CSV</h4><p>Excel yoki Google Sheets'da ochish uchun.</p>
+        <button class="btn btn-sm" id="expCsv">Yuklab olish</button>
+      </div>
+      <div class="glass data-card">
+        <div class="dc-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <h4>Excel (.xlsx)</h4><p>To'liq formatlangan jadval fayli.</p>
+        <button class="btn btn-sm" id="expXlsx">Yuklab olish</button>
+      </div>
+      <div class="glass data-card">
+        <div class="dc-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M6 2h9l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+        <h4>PDF</h4><p>Chop etish uchun tayyor hisobot.</p>
+        <button class="btn btn-sm" id="expPdf">Yuklab olish</button>
+      </div>
+    </div>
+
+    <div class="section-title"><h2>Import</h2></div>
+    <div class="data-grid">
+      <div class="glass data-card">
+        <div class="dc-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21V9M12 9l-5 5M12 9l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 21h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <h4>JSON faylini import qilish</h4><p>Avval eksport qilingan zaxira nusxani tiklaydi.</p>
+        <input type="file" id="impJson" accept=".json" style="display:none;">
+        <button class="btn btn-sm" id="btnImpJson">Faylni tanlash</button>
+      </div>
+      <div class="glass data-card">
+        <div class="dc-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21V9M12 9l-5 5M12 9l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 21h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <h4>CSV faylini import qilish</h4><p>Jadval ko'rinishidagi ma'lumotlarni yuklaydi.</p>
+        <input type="file" id="impCsv" accept=".csv" style="display:none;">
+        <button class="btn btn-sm" id="btnImpCsv">Faylni tanlash</button>
+      </div>
+    </div>
+
+    <div class="section-title"><h2>Xotira</h2></div>
+    <div class="glass data-card" style="max-width:420px;">
+      <h4>LocalStorage holati</h4>
+      <p id="storageInfo">Hisoblanmoqda...</p>
+      <div class="storage-bar"><div id="storageBar" style="width:0%"></div></div>
+      <div style="margin-top:16px;">
+        <button class="btn btn-danger btn-sm" id="btnClearAll">Barcha ma'lumotlarni o'chirish</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <section class="view" id="view-settings">
+    <div class="section-title"><h2>Savdo tizimlari</h2><span class="hint">O'zingiz xohlagan tizimlarni qo'shing yoki keraksizlarini o'chiring</span></div>
+    <div class="glass card-pad" style="max-width:640px;">
+      <p style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:16px;">Bu yerdagi ro'yxat savdo qo'shish formasida, filtrda va statistikada ishlatiladigan tizim nomlarini belgilaydi. O'zgartirsangiz, darhol hamma joyda yangilanadi. Mavjud savdolardagi belgilangan tizim yorlig'i o'chirilmaydi.</p>
+      <div class="url-row">
+        <input type="text" id="newSystemInput" placeholder="Yangi tizim nomi... (masalan: Liquidity Sweep)">
+        <button type="button" class="btn btn-sm btn-primary" id="addSystemBtn">Qo'shish</button>
+      </div>
+      <div class="chips" id="systemsSettingsList" style="margin-top:16px;"></div>
+      <div style="margin-top:18px;">
+        <button type="button" class="btn btn-sm" id="resetSystemsBtn">Standart ro'yxatga qaytarish</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="app-foot">Trading Journal Pro &middot; Barcha ma'lumotlar shu brauzerda, LocalStorage orqali saqlanadi</footer>
+</div>
+
+<!-- ============ TRADE MODAL ============ -->
+<div class="modal-overlay" id="tradeModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="tradeModalTitle">Yangi savdo</h2>
+      <button class="icon-btn" id="closeTradeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="tradeForm">
+        <input type="hidden" id="tradeId">
+        <div class="field-row">
+          <div class="field"><label>Sana va vaqt</label><input type="datetime-local" id="tDatetime" required></div>
+          <div class="field"><label>Valyuta juftligi</label><input type="text" id="tPair" placeholder="EURUSD, XAUUSD..." required style="text-transform:uppercase;"></div>
+        </div>
+        <div class="field">
+          <label>Yo'nalish</label>
+          <div class="seg">
+            <button type="button" class="sel-long" data-dir="Long">LONG</button>
+            <button type="button" class="sel-short" data-dir="Short">SHORT</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Zametka / Eslatma</label>
+          <textarea id="tNotes" placeholder="Savdo haqida izoh, sabab, tahlil..." style="min-height:96px;"></textarea>
+        </div>
+        <div class="field">
+          <label>Risk / Reward (RR)</label>
+          <input type="number" step="any" id="tRR" placeholder="masalan: 2.5">
+        </div>
+
+        <div class="field" style="margin-top:15px;">
+          <label>Profit / Loss (natija, $ yoki %)</label>
+          <input type="number" step="any" id="tPnl" placeholder="masalan: 125.50 yoki -80">
+        </div>
+
+        <div class="field">
+          <label>Status</label>
+          <div class="status-grid" id="statusGrid">
+            <button type="button" data-s="open">Open</button>
+            <button type="button" data-s="win">Win</button>
+            <button type="button" data-s="loss">Loss</button>
+            <button type="button" data-s="be">Break Even</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Sessiya</label>
+          <div class="chips" id="sessionChips">
+            <button type="button" class="chip" data-session="Asian">Asian</button>
+            <button type="button" class="chip" data-session="London">London</button>
+            <button type="button" class="chip" data-session="New York">New York</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Tizim (bir nechtasini tanlash mumkin)</label>
+          <div class="chips" id="systemChips"></div>
+          <div class="quick-add-row" id="systemQuickAdd" style="display:none;">
+            <input type="text" id="systemQuickAddInput" placeholder="Yangi tizim nomi... (masalan: Liquidity Sweep)">
+            <button type="button" class="btn btn-sm btn-primary" id="systemQuickAddConfirm">Qo'shish</button>
+            <button type="button" class="btn btn-sm" id="systemQuickAddCancel">Bekor</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Skrinshot</label>
+          <div class="shot-tabs">
+            <button type="button" class="shot-tab active" data-pane="upload">Yuklash</button>
+            <button type="button" class="shot-tab" data-pane="url">URL</button>
+            <button type="button" class="shot-tab" data-pane="paste">Clipboard</button>
+          </div>
+          <div class="shot-pane active" data-pane="upload">
+            <div class="dropzone" id="dropzone">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <div>Rasmni shu yerga tashlang yoki bosing (bir nechtasini tanlash mumkin)</div>
+              <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+            </div>
+          </div>
+          <div class="shot-pane" data-pane="url">
+            <div class="url-row">
+              <input type="text" id="urlInput" placeholder="https://...jpg">
+              <button type="button" class="btn btn-sm" id="addUrlShot">Qo'shish</button>
+            </div>
+          </div>
+          <div class="shot-pane" data-pane="paste">
+            <div class="dropzone" id="pasteZone">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="6" y="4" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 4V3a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.6"/></svg>
+              <div>Shu maydonni bosing so'ng <b>Ctrl+V</b> bosing</div>
+            </div>
+          </div>
+          <div class="thumb-grid" id="thumbGrid"></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="cancelTrade">Bekor qilish</button>
+      <button class="btn btn-primary" id="saveTrade">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM MODAL ============ -->
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal narrow">
+    <div class="modal-head"><h2 id="confirmTitle">Tasdiqlash</h2><button class="icon-btn" id="closeConfirm">&times;</button></div>
+    <div class="modal-body confirm-box"><p id="confirmText"></p></div>
+    <div class="modal-foot">
+      <button class="btn" id="confirmCancel">Bekor qilish</button>
+      <button class="btn btn-danger" id="confirmOk">Ha, davom etish</button>
+    </div>
+  </div>
+</div>
+
+<!-- lightbox -->
+<!-- ============ NOTE VIEW MODAL ============ -->
+<div class="modal-overlay" id="noteViewOverlay">
+  <div class="modal narrow">
+    <div class="modal-head">
+      <h2 id="noteViewTitle">Zametka</h2>
+      <button class="icon-btn" id="closeNoteView">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="noteViewText" style="white-space:pre-wrap;font-size:14px;color:var(--text-1);line-height:1.7;"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="noteViewCloseBtn">Yopish</button>
+      <button class="btn btn-primary" id="noteViewEditBtn">Tahrirlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCREENSHOTS VIEW MODAL ============ -->
+<div class="modal-overlay" id="shotsViewOverlay">
+  <div class="modal narrow">
+    <div class="modal-head">
+      <h2 id="shotsViewTitle">Rasmlar</h2>
+      <button class="icon-btn" id="closeShotsView">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="thumb-grid" id="shotsViewGrid"></div>
+      <p id="shotsViewEmpty" style="display:none;color:var(--text-3);font-size:13px;">Bu savdo uchun rasm biriktirilmagan.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="shotsViewCloseBtn">Yopish</button>
+      <button class="btn btn-primary" id="shotsViewEditBtn">Tahrirlash</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button class="close-lb" id="closeLightbox">&times;</button>
+  <img id="lightboxImg" src="" alt="screenshot">
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+   LIBRARY GUARDS — never assume a CDN loaded successfully.
+   Libraries are loaded dynamically below with multi-CDN fallback,
+   since a single hard-coded <script src> can fail silently on
+   some networks and leave Chart/jspdf/XLSX undefined.
+   ============================================================ */
+var HAS_CHART = false;
+var HAS_JSPDF = false;
+var HAS_XLSX  = false;
+
+function loadScriptWithFallback(urls){
+  return new Promise(function(resolve){
+    var i = 0;
+    function tryNext(){
+      if (i >= urls.length){ resolve(false); return; }
+      var s = document.createElement('script');
+      s.src = urls[i];
+      s.async = false;
+      s.onload = function(){ resolve(true); };
+      s.onerror = function(){ i++; tryNext(); };
+      document.head.appendChild(s);
+    }
+    tryNext();
+  });
+}
+
+function loadAllLibraries(){
+  var chartUrls = [
+    'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js',
+    'https://unpkg.com/chart.js@4.4.4/dist/chart.umd.min.js'
+  ];
+  var jspdfUrls = [
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+    'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
+  ];
+  var xlsxUrls = [
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
+  ];
+  return Promise.all([
+    loadScriptWithFallback(chartUrls),
+    loadScriptWithFallback(jspdfUrls),
+    loadScriptWithFallback(xlsxUrls)
+  ]).then(function(results){
+    HAS_CHART = (typeof window.Chart !== 'undefined');
+    HAS_JSPDF = (typeof window.jspdf !== 'undefined' && typeof window.jspdf.jsPDF !== 'undefined');
+    HAS_XLSX  = (typeof window.XLSX !== 'undefined');
+    return results;
+  });
+}
+
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
+var SYSTEMS_KEY = 'tj_systems_v1';
+var DEFAULT_SYSTEMS = ['Order Block','Breaker Block','FVG','IFVG','BPR','Iceberg','Klassika','CRT'];
+function loadSystemsList(){
+  try{
+    var raw = localStorage.getItem(SYSTEMS_KEY);
+    if (raw){
+      var arr = JSON.parse(raw);
+      if (Array.isArray(arr) && arr.length) return arr;
+    }
+  }catch(e){ console.error('Systems load error:', e); }
+  return DEFAULT_SYSTEMS.slice();
+}
+function saveSystemsList(){
+  try{ localStorage.setItem(SYSTEMS_KEY, JSON.stringify(SYSTEMS)); }
+  catch(e){ console.error('Systems save error:', e); toast('Tizimlar ro\'yxatini saqlashda xatolik', 'err'); }
+}
+var SYSTEMS = loadSystemsList();
+var SESSIONS = ['Asian','London','New York'];
+var STORAGE_KEY = 'tj_trades_v1';
+var RULES_KEY = 'tj_rules_v1';
+var PRINCIPLES_KEY = 'tj_principles_v1';
+function loadRulesList(){
+  try{
+    var raw = localStorage.getItem(RULES_KEY);
+    if (raw){ var arr = JSON.parse(raw); if (Array.isArray(arr)) return arr; }
+  }catch(e){ console.error('Rules load error:', e); }
+  return [];
+}
+function saveRulesList(){
+  try{ localStorage.setItem(RULES_KEY, JSON.stringify(RULES)); }
+  catch(e){ console.error('Rules save error:', e); toast('Qoidalarni saqlashda xatolik', 'err'); }
+}
+function loadPrinciplesNote(){
+  try{ return localStorage.getItem(PRINCIPLES_KEY) || ''; }
+  catch(e){ console.error('Principles load error:', e); return ''; }
+}
+function savePrinciplesNote(text){
+  try{ localStorage.setItem(PRINCIPLES_KEY, text); }
+  catch(e){ console.error('Principles save error:', e); toast('Tamoyillarni saqlashda xatolik', 'err'); }
+}
+var RULES = loadRulesList();
+var MAX_HISTORY = 60;
+var CHARTS = {}; // holds live Chart.js instances so we can destroy() before re-render
+
+/* ============================================================
+   STATE
+   ============================================================ */
+var trades = [];
+var historyStack = [];
+var redoStack = [];
+var filters = { search:'', session:'', system:'', status:'', month:'' };
+var currentShots = []; // screenshots attached to the trade currently being edited/created
+var currentDir = 'Long';
+var currentStatus = 'open';
+var currentSession = '';
+var currentSystems = [];
+var confirmCallback = null;
+
+/* ============================================================
+   UTIL
+   ============================================================ */
+function uid(){
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+  return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+}
+function nowLocalInputValue(){
+  var d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0,16);
+}
+function fmtMoney(n){
+  if (n === null || n === undefined || isNaN(n)) return '0.00';
+  var s = n.toFixed(2);
+  return (n>0?'+':'') + s;
+}
+function fmtNum(n, dec){
+  dec = (dec===undefined)?2:dec;
+  if (n===null||n===undefined||isNaN(n)) return '0';
+  return n.toFixed(dec);
+}
+function escapeHtml(str){
+  if (str===null||str===undefined) return '';
+  return String(str).replace(/[&<>"']/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+  });
+}
+function toast(msg, type){
+  var wrap = document.getElementById('toastWrap');
+  if (!wrap) return;
+  var el = document.createElement('div');
+  el.className = 'toast' + (type ? ' ' + type : '');
+  el.innerHTML = '<span class="dot"></span><span></span>';
+  el.querySelector('span:last-child').textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(function(){
+    el.style.transition = 'opacity .25s';
+    el.style.opacity = '0';
+    setTimeout(function(){ el.remove(); }, 260);
+  }, 3200);
+}
+function downloadBlob(content, filename, mime){
+  try{
+    var blob = (content instanceof Blob) ? content : new Blob([content], {type:mime||'text/plain'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  }catch(e){
+    console.error('Download error:', e);
+    toast('Faylni yuklab bo\'lmadi: ' + e.message, 'err');
+  }
+}
+
+/* ============================================================
+   PERSISTENCE
+   ============================================================ */
+function loadTrades(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    trades = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(trades)) trades = [];
+  }catch(e){
+    console.error('Load error:', e);
+    trades = [];
+  }
+}
+function persist(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(trades));
+  }catch(e){
+    console.error('Save error:', e);
+    toast('Saqlashda xatolik: xotira to\'lgan bo\'lishi mumkin (skrinshotlar juda katta)', 'err');
+  }
+}
+function snapshot(){ return JSON.parse(JSON.stringify(trades)); }
+function recordHistory(){
+  historyStack.push(snapshot());
+  if (historyStack.length > MAX_HISTORY) historyStack.shift();
+  redoStack = [];
+  updateUndoRedoButtons();
+}
+function undo(){
+  if (!historyStack.length){ toast('Undo uchun tarix yo\'q'); return; }
+  redoStack.push(snapshot());
+  trades = historyStack.pop();
+  persist(); renderAll();
+  toast('Bekor qilindi (Undo)');
+  updateUndoRedoButtons();
+}
+function redo(){
+  if (!redoStack.length){ toast('Redo uchun tarix yo\'q'); return; }
+  historyStack.push(snapshot());
+  trades = redoStack.pop();
+  persist(); renderAll();
+  toast('Qaytarildi (Redo)');
+  updateUndoRedoButtons();
+}
+function updateUndoRedoButtons(){
+  var u = document.getElementById('btnUndo'), r = document.getElementById('btnRedo');
+  if (u) u.disabled = historyStack.length === 0;
+  if (r) r.disabled = redoStack.length === 0;
+}
+
+/* ============================================================
+   CALCULATIONS
+   ============================================================ */
+function calcRR(val){
+  var rr = parseFloat(val);
+  if (isNaN(rr) || rr < 0) return 0;
+  return rr;
+}
+function isClosedWin(t){ return t.status === 'win'; }
+function isClosedLoss(t){ return t.status === 'loss'; }
+function isBE(t){ return t.status === 'be'; }
+function isOpen(t){ return t.status === 'open'; }
+
+function computeStats(list){
+  list = list || [];
+  var total = list.length;
+  var wins = list.filter(isClosedWin);
+  var losses = list.filter(isClosedLoss);
+  var bes = list.filter(isBE);
+  var opens = list.filter(isOpen);
+  var closedForRate = wins.length + losses.length;
+  var winRate = closedForRate > 0 ? (wins.length / closedForRate) * 100 : 0;
+
+  var grossProfit = wins.reduce(function(s,t){ return s + (parseFloat(t.pnl)||0); }, 0);
+  var grossLossAbs = Math.abs(losses.reduce(function(s,t){ return s + (parseFloat(t.pnl)||0); }, 0));
+  var totalPnl = list.reduce(function(s,t){ return s + (parseFloat(t.pnl)||0); }, 0);
+
+  var avgWin = wins.length ? grossProfit / wins.length : 0;
+  var avgLoss = losses.length ? grossLossAbs / losses.length : 0;
+
+  var rrList = list.map(function(t){ return parseFloat(t.rr)||0; }).filter(function(n){ return n>0; });
+  var totalRR = rrList.reduce(function(s,n){ return s+n; }, 0);
+  var avgRR = rrList.length ? totalRR/rrList.length : 0;
+
+  var biggestWin = wins.reduce(function(m,t){ return Math.max(m, parseFloat(t.pnl)||0); }, 0);
+  var biggestLoss = losses.reduce(function(m,t){ return Math.min(m, parseFloat(t.pnl)||0); }, 0);
+
+  // streaks — chronological order
+  var sorted = list.slice().sort(function(a,b){ return new Date(a.datetime) - new Date(b.datetime); });
+  var curWinStreak=0, maxWinStreak=0, curLossStreak=0, maxLossStreak=0;
+  sorted.forEach(function(t){
+    if (t.status === 'win'){ curWinStreak++; maxWinStreak = Math.max(maxWinStreak,curWinStreak); curLossStreak=0; }
+    else if (t.status === 'loss'){ curLossStreak++; maxLossStreak = Math.max(maxLossStreak,curLossStreak); curWinStreak=0; }
+  });
+
+  var profitFactor = grossLossAbs > 0 ? grossProfit/grossLossAbs : (grossProfit>0 ? Infinity : 0);
+  var lossRateFrac = closedForRate>0 ? losses.length/closedForRate : 0;
+  var winRateFrac = closedForRate>0 ? wins.length/closedForRate : 0;
+  var expectancy = (winRateFrac*avgWin) - (lossRateFrac*avgLoss);
+
+  return {
+    total: total, wins: wins.length, losses: losses.length, be: bes.length, open: opens.length,
+    winRate: winRate, avgWin: avgWin, avgLoss: avgLoss, totalPnl: totalPnl, totalRR: totalRR, avgRR: avgRR,
+    biggestWin: biggestWin, biggestLoss: biggestLoss, maxWinStreak: maxWinStreak, maxLossStreak: maxLossStreak,
+    profitFactor: profitFactor, expectancy: expectancy, grossProfit: grossProfit, grossLossAbs: grossLossAbs
+  };
+}
+
+/* ============================================================
+   FILTERING
+   ============================================================ */
+function getFilteredTrades(){
+  return trades.filter(function(t){
+    if (filters.session && t.session !== filters.session) return false;
+    if (filters.system && (!t.systems || t.systems.indexOf(filters.system) === -1)) return false;
+    if (filters.status && t.status !== filters.status) return false;
+    if (filters.month){
+      var d = new Date(t.datetime);
+      var key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      if (key !== filters.month) return false;
+    }
+    if (filters.search){
+      var s = filters.search.toLowerCase();
+      var hay = [t.pair, t.notes, t.session, (t.systems||[]).join(' ')].join(' ').toLowerCase();
+      if (hay.indexOf(s) === -1) return false;
+    }
+    return true;
+  });
+}
+
+/* ============================================================
+   RENDER: TICKER
+   ============================================================ */
+function renderTicker(){
+  var track = document.getElementById('tickerTrack');
+  if (!track) return;
+  var st = computeStats(trades);
+  var items = [
+    { l:'Total Trades', v: st.total },
+    { l:'Win Rate', v: fmtNum(st.winRate,1)+'%', cls: st.winRate>=50?'up':'down' },
+    { l:'Total P/L', v: fmtMoney(st.totalPnl), cls: st.totalPnl>=0?'up':'down' },
+    { l:'Profit Factor', v: isFinite(st.profitFactor)?fmtNum(st.profitFactor,2):'∞' },
+    { l:'Avg RR', v: fmtNum(st.avgRR,2) },
+    { l:'Expectancy', v: fmtMoney(st.expectancy), cls: st.expectancy>=0?'up':'down' },
+    { l:'Best Streak', v: st.maxWinStreak+'W' },
+    { l:'Open Trades', v: st.open }
+  ];
+  var html = items.map(function(it){
+    return '<div class="ticker-item"><span class="ticker-dot"></span>' + it.l + ': <b class="'+(it.cls||'')+'">' + it.v + '</b></div>';
+  }).join('');
+  track.innerHTML = html + html; // duplicated for seamless scroll loop
+}
+
+/* ============================================================
+   RENDER: STAT CARDS
+   ============================================================ */
+function renderStatCards(){
+  var grid = document.getElementById('statGrid');
+  if (!grid) return;
+  var st = computeStats(trades);
+  var cards = [
+    {l:'Total Trades', v:st.total, cls:''},
+    {l:'Win', v:st.wins, cls:'bull'},
+    {l:'Loss', v:st.losses, cls:'bear'},
+    {l:'Break Even', v:st.be, cls:'warn'},
+    {l:'Open', v:st.open, cls:''},
+    {l:'Win Rate', v:fmtNum(st.winRate,1)+'%', cls:'accent'},
+    {l:'Avg Win', v:fmtMoney(st.avgWin), cls:'bull'},
+    {l:'Avg Loss', v:fmtMoney(-st.avgLoss), cls:'bear'},
+    {l:'Total RR', v:fmtNum(st.totalRR,2), cls:'accent'},
+    {l:'Avg RR', v:fmtNum(st.avgRR,2), cls:''},
+    {l:'Total P/L', v:fmtMoney(st.totalPnl), cls: st.totalPnl>=0?'bull':'bear'},
+    {l:'Eng katta g\'alaba', v:fmtMoney(st.biggestWin), cls:'bull'},
+    {l:'Eng katta yo\'qotish', v:fmtMoney(st.biggestLoss), cls:'bear'},
+    {l:'Max Win Streak', v:st.maxWinStreak, cls:'bull'},
+    {l:'Max Loss Streak', v:st.maxLossStreak, cls:'bear'},
+    {l:'Profit Factor', v: isFinite(st.profitFactor)?fmtNum(st.profitFactor,2):'∞', cls:'accent'},
+    {l:'Expectancy', v:fmtMoney(st.expectancy), cls: st.expectancy>=0?'bull':'bear'}
+  ];
+  grid.innerHTML = cards.map(function(c){
+    return '<div class="glass stat-card '+c.cls+'"><div class="lbl">'+c.l+'</div><div class="val mono">'+c.v+'</div></div>';
+  }).join('');
+}
+
+/* ============================================================
+   RENDER: TRADE TABLE
+   ============================================================ */
+function statusBadge(status){
+  var map = { win:['Win','win'], loss:['Loss','loss'], be:['BE','be'], open:['Open','open'] };
+  var m = map[status] || map.open;
+  return '<span class="badge '+m[1]+'">'+m[0]+'</span>';
+}
+function renderTradeTable(){
+  var tbody = document.getElementById('tradeTbody');
+  var empty = document.getElementById('tradeEmpty');
+  if (!tbody) return;
+  var list = getFilteredTrades().slice().sort(function(a,b){ return new Date(b.datetime) - new Date(a.datetime); });
+  if (!list.length){
+    tbody.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  tbody.innerHTML = list.map(function(t){
+    var d = new Date(t.datetime);
+    var dateStr = isNaN(d.getTime()) ? '-' : d.toLocaleString('uz-UZ', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    var systemsHtml = (t.systems||[]).map(function(s){ return '<span class="pill">'+escapeHtml(s)+'</span>'; }).join('');
+    var pnlColor = (parseFloat(t.pnl)||0) >= 0 ? 'style="color:var(--bull)"' : 'style="color:var(--bear)"';
+    var hasNotes = t.notes && t.notes.trim().length > 0;
+    var hasShots = t.screenshots && t.screenshots.length > 0;
+    return '<tr>'
+      + '<td class="mono">'+dateStr+'</td>'
+      + '<td><b>'+escapeHtml(t.pair||'-')+'</b></td>'
+      + '<td><span class="dir-badge '+(t.direction==='Long'?'long':'short')+'">'+(t.direction||'-')+'</span></td>'
+      + '<td class="mono">'+fmtNum(t.rr,2)+'</td>'
+      + '<td class="mono" '+pnlColor+'>'+fmtMoney(parseFloat(t.pnl)||0)+'</td>'
+      + '<td>'+statusBadge(t.status)+'</td>'
+      + '<td>'+(systemsHtml||'<span style="color:var(--text-3)">-</span>')+'</td>'
+      + '<td>'+(t.session||'-')+'</td>'
+      + '<td><button class="icon-btn btn-sm" style="width:30px;height:30px;'+(hasNotes?'':'opacity:.35;')+'" data-note="'+t.id+'" title="'+(hasNotes?'Zametkani ko\'rish':'Zametka yo\'q')+'"><svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M6 2h9l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12h6M9 16h6M9 8h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>'
+      + '<button class="icon-btn btn-sm" style="width:30px;height:30px;'+(hasShots?'':'opacity:.35;')+'" data-shots="'+t.id+'" title="'+(hasShots?'Rasmlarni ko\'rish ('+t.screenshots.length+')':'Rasm yo\'q')+'"><svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M3 7a2 2 0 012-2h2l1.5-2h7L17 5h2a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="2"/></svg></button></td>'
+      + '<td><div class="row-actions"><button class="icon-btn btn-sm" style="width:30px;height:30px;" data-edit="'+t.id+'" title="Tahrirlash"><svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+      + '<button class="icon-btn btn-sm" style="width:30px;height:30px;" data-del="'+t.id+'" title="O\'chirish"><svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></td>'
+      + '</tr>';
+  }).join('');
+
+  tbody.querySelectorAll('[data-note]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openNoteView(btn.getAttribute('data-note')); });
+  });
+  tbody.querySelectorAll('[data-shots]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openShotsView(btn.getAttribute('data-shots')); });
+  });
+  tbody.querySelectorAll('[data-edit]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openTradeModal(btn.getAttribute('data-edit')); });
+  });
+  tbody.querySelectorAll('[data-del]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-del');
+      openConfirm('Savdoni o\'chirish', 'Ushbu savdoni o\'chirishni tasdiqlaysizmi? Bu amalni Undo (Ctrl+Z) orqali qaytarish mumkin.', function(){
+        recordHistory();
+        trades = trades.filter(function(t){ return t.id !== id; });
+        persist(); renderAll();
+        toast('Savdo o\'chirildi', 'ok');
+      });
+    });
+  });
+}
+
+/* ============================================================
+   CHARTS
+   ============================================================ */
+function destroyChart(key){
+  if (CHARTS[key]){ try{ CHARTS[key].destroy(); }catch(e){} delete CHARTS[key]; }
+}
+function chartTheme(){
+  return {
+    grid: 'rgba(255,255,255,.05)',
+    text: '#9099ad',
+    font: { family: "'JetBrains Mono', monospace", size: 10.5 }
+  };
+}
+function noLibNotice(canvasId){
+  var c = document.getElementById(canvasId);
+  if (!c) return;
+  var parent = c.parentElement;
+  if (parent && !parent.querySelector('.chart-empty')){
+    var div = document.createElement('div');
+    div.className = 'chart-empty';
+    div.textContent = 'Grafik kutubxonasi hali yuklanmoqda yoki internet ulanishida muammo bor';
+    parent.appendChild(div);
+  }
+}
+
+function renderCharts(){
+  if (!HAS_CHART){
+    ['chartEquity','chartPie','chartProfit','chartRR'].forEach(noLibNotice);
+    return;
+  }
+  var theme = chartTheme();
+  var sorted = trades.slice().sort(function(a,b){ return new Date(a.datetime) - new Date(b.datetime); });
+
+  // Equity curve
+  destroyChart('equity');
+  var cvEq = document.getElementById('chartEquity');
+  if (cvEq){
+    var cum = 0;
+    var eqLabels = [], eqData = [];
+    sorted.forEach(function(t){
+      cum += (parseFloat(t.pnl)||0);
+      eqLabels.push(new Date(t.datetime).toLocaleDateString('uz-UZ',{month:'short',day:'numeric'}));
+      eqData.push(cum);
+    });
+    if (!eqData.length){ eqLabels=['Start']; eqData=[0]; }
+    CHARTS.equity = new Chart(cvEq, {
+      type:'line',
+      data:{ labels:eqLabels, datasets:[{ data:eqData, borderColor:'#00d9b5', backgroundColor:'rgba(0,217,181,.12)', fill:true, tension:.35, pointRadius:0, borderWidth:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+        scales:{ x:{grid:{color:theme.grid},ticks:{color:theme.text,font:theme.font,maxTicksLimit:8}}, y:{grid:{color:theme.grid},ticks:{color:theme.text,font:theme.font}} } }
+    });
+  }
+
+  // Win/Loss pie
+  destroyChart('pie');
+  var cvPie = document.getElementById('chartPie');
+  if (cvPie){
+    var st = computeStats(trades);
+    CHARTS.pie = new Chart(cvPie, {
+      type:'doughnut',
+      data:{ labels:['Win','Loss','Break Even','Open'], datasets:[{ data:[st.wins,st.losses,st.be,st.open], backgroundColor:['#26d07c','#ff4d6d','#f5b942','#5c6478'], borderWidth:0 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'68%', plugins:{legend:{position:'bottom',labels:{color:theme.text,font:theme.font,padding:14}}} }
+    });
+  }
+
+  // Profit curve (per trade bar)
+  destroyChart('profit');
+  var cvProfit = document.getElementById('chartProfit');
+  if (cvProfit){
+    var pLabels = sorted.map(function(t,i){ return 'T'+(i+1); });
+    var pData = sorted.map(function(t){ return parseFloat(t.pnl)||0; });
+    var pColors = pData.map(function(v){ return v>=0 ? '#26d07c' : '#ff4d6d'; });
+    if (!pData.length){ pLabels=['—']; pData=[0]; pColors=['#5c6478']; }
+    CHARTS.profit = new Chart(cvProfit, {
+      type:'bar',
+      data:{ labels:pLabels, datasets:[{ data:pData, backgroundColor:pColors, borderRadius:3, maxBarThickness:22 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+        scales:{ x:{grid:{display:false},ticks:{color:theme.text,font:theme.font,maxTicksLimit:10}}, y:{grid:{color:theme.grid},ticks:{color:theme.text,font:theme.font}} } }
+    });
+  }
+
+  // RR distribution
+  destroyChart('rr');
+  var cvRR = document.getElementById('chartRR');
+  if (cvRR){
+    var buckets = [0,0,0,0,0]; // 0-1,1-2,2-3,3-4,4+
+    trades.forEach(function(t){
+      var rr = parseFloat(t.rr)||0;
+      if (rr<=0) return;
+      if (rr<1) buckets[0]++;
+      else if (rr<2) buckets[1]++;
+      else if (rr<3) buckets[2]++;
+      else if (rr<4) buckets[3]++;
+      else buckets[4]++;
+    });
+    CHARTS.rr = new Chart(cvRR, {
+      type:'bar',
+      data:{ labels:['0-1','1-2','2-3','3-4','4+'], datasets:[{ data:buckets, backgroundColor:'#00d9b5', borderRadius:5, maxBarThickness:44 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+        scales:{ x:{grid:{display:false},ticks:{color:theme.text,font:theme.font}}, y:{grid:{color:theme.grid},ticks:{color:theme.text,font:theme.font,precision:0}} } }
+    });
+  }
+}
+
+function isoWeekKey(d){
+  var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  var yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  var weekNo = Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+  return date.getUTCFullYear() + '-W' + String(weekNo).padStart(2,'0');
+}
+
+function renderAnalyticsCharts(){
+  if (!HAS_CHART){
+    ['chartWeekly','chartMonthly','chartSession'].forEach(noLibNotice);
+    return;
+  }
+  var theme = chartTheme();
+
+  // weekly
+  destroyChart('weekly');
+  var cvW = document.getElementById('chartWeekly');
+  if (cvW){
+    var wMap = {};
+    trades.forEach(function(t){
+      var d = new Date(t.datetime); if (isNaN(d.getTime())) return;
+      var k = isoWeekKey(d);
+      wMap[k] = (wMap[k]||0) + (parseFloat(t.pnl)||0);
+    });
+    var wKeys = Object.keys(wMap).sort().slice(-10);
+    var wData = wKeys.map(function(k){ return wMap[k]; });
+    var wColors = wData.map(function(v){ return v>=0?'#26d07c':'#ff4d6d'; });
+    if (!wKeys.length){ wKeys=['—']; wData=[0]; wColors=['#5c6478']; }
+    CHARTS.weekly = new Chart(cvW, { type:'bar', data:{labels:wKeys,datasets:[{data:wData,backgroundColor:wColors,borderRadius:4,maxBarThickness:30}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:theme.text,font:theme.font,maxTicksLimit:6}},y:{grid:{color:theme.grid},ticks:{color:theme.text,font:theme.font}}}} });
+  }
+
+  // monthly
+  destroyChart('monthly');
+  var cvM = document.getElementById('chartMonthly');
+  if (cvM){
+    var mMap = {};
+    trades.forEach(function(t){
+      var d = new Date(t.datetime); if (isNaN(d.getTime())) return;
+      var k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      mMap[k] = (mMap[k]||0) + (parseFloat(t.pnl)||0);
+    });
+    var mKeys = Object.keys(mMap).sort().slice(-12);
+    var mData = mKeys.map(function(k){ return mMap[k]; });
+    var mColors = mData.map(function(v){ return v>=0?'#26d07c':'#ff4d6d'; });
+    if (!mKeys.length){ mKeys=['—']; mData=[0]; mColors=['#5c6478']; }
+    CHARTS.monthly = new Chart(cvM, { type:'bar', data:{labels:mKeys,datasets:[{data:mData,backgroundColor:mColors,borderRadius:4,maxBarThickness:30}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:theme.text,font:theme.font}},y:{grid:{color:theme.grid},ticks:{color:theme.text,font:theme.font}}}} });
+  }
+
+  // session
+  destroyChart('session');
+  var cvS = document.getElementById('chartSession');
+  if (cvS){
+    var sData = SESSIONS.map(function(s){ return trades.filter(function(t){ return t.session===s; }).length; });
+    CHARTS.session = new Chart(cvS, { type:'doughnut', data:{labels:SESSIONS,datasets:[{data:sData,backgroundColor:['#00d9b5','#3b82f6','#f5b942'],borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:theme.text,font:theme.font,padding:12}}}} });
+  }
+}
+
+/* ============================================================
+   ANALYTICS TABLES
+   ============================================================ */
+function groupStats(list, keyFn){
+  var groups = {};
+  list.forEach(function(t){
+    var keys = keyFn(t);
+    if (!Array.isArray(keys)) keys = [keys];
+    keys.forEach(function(k){
+      if (k===null || k===undefined || k==='') return;
+      if (!groups[k]) groups[k] = [];
+      groups[k].push(t);
+    });
+  });
+  return Object.keys(groups).map(function(k){
+    var arr = groups[k];
+    var st = computeStats(arr);
+    return { key:k, count:arr.length, wins:st.wins, losses:st.losses, winRate:st.winRate, pnl:st.totalPnl, avgRR:st.avgRR };
+  }).sort(function(a,b){ return b.count - a.count; });
+}
+function fillMiniTable(tblId, rows, keyLabelFn, includeWL){
+  var tbl = document.getElementById(tblId);
+  if (!tbl) return;
+  var tbody = tbl.querySelector('tbody');
+  if (!rows.length){
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-3);text-align:center;padding:20px;">Ma\'lumot yo\'q</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(function(r){
+    var pnlColor = r.pnl>=0 ? 'style="color:var(--bull)"' : 'style="color:var(--bear)"';
+    if (includeWL){
+      return '<tr><td>'+escapeHtml(keyLabelFn(r.key))+'</td><td class="mono">'+r.count+'</td><td class="mono" style="color:var(--bull)">'+r.wins+'</td><td class="mono" style="color:var(--bear)">'+r.losses+'</td><td class="mono">'+fmtNum(r.winRate,1)+'%</td><td class="mono" '+pnlColor+'>'+fmtMoney(r.pnl)+'</td><td class="mono">'+fmtNum(r.avgRR,2)+'</td></tr>';
+    }
+    return '<tr><td>'+escapeHtml(keyLabelFn(r.key))+'</td><td class="mono">'+r.count+'</td><td class="mono">'+fmtNum(r.winRate,1)+'%</td><td class="mono" '+pnlColor+'>'+fmtMoney(r.pnl)+'</td><td class="mono">'+fmtNum(r.avgRR,2)+'</td></tr>';
+  }).join('');
+}
+function renderAnalyticsTables(){
+  var bySystem = groupStats(trades, function(t){ return t.systems && t.systems.length ? t.systems : null; });
+  fillMiniTable('tblSystem', bySystem, function(k){ return k; }, true);
+
+  var byCombo = groupStats(trades, function(t){
+    if (!t.systems || !t.systems.length) return null;
+    return t.systems.slice().sort().join(' + ');
+  });
+  fillMiniTable('tblCombo', byCombo, function(k){ return k; }, true);
+
+  var bySession = groupStats(trades, function(t){ return t.session || null; });
+  fillMiniTable('tblSession', bySession, function(k){ return k; }, false);
+
+  var byDir = groupStats(trades, function(t){ return t.direction || null; });
+  fillMiniTable('tblDirection', byDir, function(k){ return k; }, false);
+
+  var byPair = groupStats(trades, function(t){ return t.pair ? t.pair.toUpperCase() : null; });
+  fillMiniTable('tblPair', byPair, function(k){ return k; }, false);
+}
+
+function renderPeriodStats(){
+  var grid = document.getElementById('periodStatsGrid');
+  if (!grid) return;
+  var now = new Date();
+  var today = trades.filter(function(t){ var d=new Date(t.datetime); return d.toDateString()===now.toDateString(); });
+  var weekStart = new Date(now); weekStart.setDate(now.getDate()-now.getDay());
+  var thisWeek = trades.filter(function(t){ return new Date(t.datetime) >= weekStart; });
+  var thisMonth = trades.filter(function(t){ var d=new Date(t.datetime); return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth(); });
+  var thisYear = trades.filter(function(t){ var d=new Date(t.datetime); return d.getFullYear()===now.getFullYear(); });
+
+  var periods = [
+    {l:'Kunlik (bugun)', d: today},
+    {l:'Haftalik', d: thisWeek},
+    {l:'Oylik', d: thisMonth},
+    {l:'Yillik', d: thisYear}
+  ];
+  grid.innerHTML = periods.map(function(p){
+    var st = computeStats(p.d);
+    return '<div class="glass card-pad">'
+      + '<h3 style="font-size:13.5px;margin-bottom:12px;">'+p.l+'</h3>'
+      + '<div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:0;">'
+      + statMini('Savdo', st.total)
+      + statMini('Win Rate', fmtNum(st.winRate,1)+'%')
+      + statMini('P/L', fmtMoney(st.totalPnl), st.totalPnl>=0?'bull':'bear')
+      + statMini('Avg RR', fmtNum(st.avgRR,2))
+      + '</div></div>';
+  }).join('');
+}
+function statMini(l,v,cls){
+  return '<div class="stat-card '+(cls||'')+'" style="padding:10px 12px;background:var(--bg-elevated);border-radius:10px;"><div class="lbl" style="font-size:9.5px;">'+l+'</div><div class="val mono" style="font-size:15px;">'+v+'</div></div>';
+}
+
+/* ============================================================
+   AI ANALYSIS (100% local heuristics, no external API)
+   ============================================================ */
+function renderAI(){
+  var container = document.getElementById('aiContainer');
+  if (!container) return;
+  var closed = trades.filter(function(t){ return t.status==='win' || t.status==='loss'; });
+  if (closed.length < 3){
+    container.innerHTML = '<div class="glass ai-empty">'
+      + '<h3 style="color:var(--text-2);margin-bottom:8px;">Tahlil uchun ma\'lumot yetarli emas</h3>'
+      + '<p style="font-size:12.8px;">AI Analysis kamida 3 ta yakunlangan (Win/Loss) savdo bo\'lganda avtomatik ishga tushadi.</p></div>';
+    return;
+  }
+
+  var bySystem = groupStats(closed, function(t){ return t.systems && t.systems.length ? t.systems : null; });
+  var byCombo = groupStats(closed, function(t){ return (t.systems&&t.systems.length)? t.systems.slice().sort().join(' + ') : null; });
+  var bySession = groupStats(closed, function(t){ return t.session || null; });
+  var byDir = groupStats(closed, function(t){ return t.direction || null; });
+  var byDay = groupStats(closed, function(t){ var d=new Date(t.datetime); return isNaN(d.getTime())?null:['Yak','Dush','Sesh','Chor','Pay','Jum','Shan'][d.getDay()]; });
+
+  function best(arr, cmp){ return arr.length ? arr.slice().sort(cmp)[0] : null; }
+  var bestSystem = best(bySystem, function(a,b){ return b.pnl - a.pnl; });
+  var worstSystem = best(bySystem, function(a,b){ return a.pnl - b.pnl; });
+  var mostUsedSystem = best(bySystem, function(a,b){ return b.count - a.count; });
+  var highestWinRateSystem = best(bySystem.filter(function(s){return s.count>=3;}), function(a,b){ return b.winRate - a.winRate; });
+  var mostSLSystem = best(bySystem, function(a,b){ return b.losses - a.losses; });
+  var bestSession = best(bySession, function(a,b){ return b.pnl - a.pnl; });
+  var worstSession = best(bySession, function(a,b){ return a.pnl - b.pnl; });
+  var bestDay = best(byDay, function(a,b){ return b.pnl - a.pnl; });
+  var worstDay = best(byDay, function(a,b){ return a.pnl - b.pnl; });
+  var bestCombo = best(byCombo.filter(function(c){return c.count>=2;}), function(a,b){ return b.pnl - a.pnl; });
+  var longStat = byDir.find(function(d){ return d.key==='Long'; });
+  var shortStat = byDir.find(function(d){ return d.key==='Short'; });
+
+  // last 3 weeks loss analysis
+  var threeWeeksAgo = new Date(); threeWeeksAgo.setDate(threeWeeksAgo.getDate()-21);
+  var recentLosses = closed.filter(function(t){ return t.status==='loss' && new Date(t.datetime) >= threeWeeksAgo; });
+  var recentLossBySystem = groupStats(recentLosses, function(t){ return t.systems && t.systems.length ? t.systems : null; });
+  var recentWorstSystem = best(recentLossBySystem, function(a,b){ return b.count - a.count; });
+
+  var overall = computeStats(closed);
+  var strengths = [], weaknesses = [], recs = [];
+
+  if (bestSystem && bestSystem.pnl>0) strengths.push('<b>'+escapeHtml(bestSystem.key)+'</b> tizimi eng ko\'p foyda keltirdi (jami '+fmtMoney(bestSystem.pnl)+', '+bestSystem.count+' ta savdo).');
+  if (highestWinRateSystem) strengths.push('<b>'+escapeHtml(highestWinRateSystem.key)+'</b> tizimi eng yuqori Win Rate ko\'rsatkichiga ega — '+fmtNum(highestWinRateSystem.winRate,1)+'%.');
+  if (bestSession) strengths.push('<b>'+escapeHtml(bestSession.key)+'</b> sessiyasida savdo natijalari eng yaxshi (P/L: '+fmtMoney(bestSession.pnl)+', Win Rate: '+fmtNum(bestSession.winRate,1)+'%).');
+  if (longStat && shortStat){
+    var better = longStat.pnl >= shortStat.pnl ? longStat : shortStat;
+    strengths.push('<b>'+better.key+'</b> pozitsiyalar umumiy natijada yaxshiroq ishlayapti (P/L: '+fmtMoney(better.pnl)+', Win Rate: '+fmtNum(better.winRate,1)+'%).');
+  }
+  if (bestDay) strengths.push('Eng samarali kun — <b>'+bestDay.key+'</b> (P/L: '+fmtMoney(bestDay.pnl)+').');
+  if (bestCombo) strengths.push('Eng yaxshi kombinatsiya: <b>'+escapeHtml(bestCombo.key)+'</b> (P/L: '+fmtMoney(bestCombo.pnl)+', '+bestCombo.count+' ta savdo).');
+  if (overall.maxWinStreak>=3) strengths.push('Eng uzun g\'alaba seriyasi — <b>'+overall.maxWinStreak+' ta</b> ketma-ket Win.');
+  if (!strengths.length) strengths.push('Hozircha aniq kuchli tomon aniqlanmadi — ko\'proq savdo ma\'lumoti kerak.');
+
+  if (worstSystem && worstSystem.pnl<0) weaknesses.push('<b>'+escapeHtml(worstSystem.key)+'</b> tizimi eng ko\'p zarar keltirdi (jami '+fmtMoney(worstSystem.pnl)+').');
+  if (mostSLSystem && mostSLSystem.losses>0) weaknesses.push('<b>'+escapeHtml(mostSLSystem.key)+'</b> tizimi eng ko\'p Stop Loss berdi ('+mostSLSystem.losses+' marta).');
+  if (worstSession) weaknesses.push('<b>'+escapeHtml(worstSession.key)+'</b> sessiyasida natijalar eng zaif (P/L: '+fmtMoney(worstSession.pnl)+').');
+  if (worstDay) weaknesses.push('Eng zaif kun — <b>'+worstDay.key+'</b> (P/L: '+fmtMoney(worstDay.pnl)+').');
+  if (recentWorstSystem) weaknesses.push('So\'nggi 3 hafta ichida eng ko\'p zararni <b>'+escapeHtml(recentWorstSystem.key)+'</b> tizimi keltirdi ('+recentWorstSystem.count+' ta yo\'qotish).');
+  if (overall.maxLossStreak>=3) weaknesses.push('Eng uzun yo\'qotish seriyasi — <b>'+overall.maxLossStreak+' ta</b> ketma-ket Loss. Bu davrda risk boshqaruviga alohida e\'tibor bering.');
+  if (overall.profitFactor < 1 && isFinite(overall.profitFactor)) weaknesses.push('Profit Factor 1 dan past ('+fmtNum(overall.profitFactor,2)+') — hozirgi strategiya umumiy zararda.');
+  if (!weaknesses.length) weaknesses.push('Aniq zaif tomon topilmadi — natijalar barqaror ko\'rinmoqda.');
+
+  if (bestSystem) recs.push('<b>'+escapeHtml(bestSystem.key)+'</b> tizimiga ko\'proq e\'tibor qarating — u eng yuqori natija bermoqda.');
+  if (worstSystem && worstSystem.pnl<0) recs.push('<b>'+escapeHtml(worstSystem.key)+'</b> tizimini qayta ko\'rib chiqing yoki qo\'shimcha tasdiqlovchi shartlar bilan ishlating.');
+  if (bestSession) recs.push('Savdolarni asosan <b>'+escapeHtml(bestSession.key)+'</b> sessiyasida amalga oshirishga harakat qiling.');
+  if (overall.avgRR < 1.5) recs.push('O\'rtacha Risk/Reward nisbati past ('+fmtNum(overall.avgRR,2)+') — TP masofasini oshirish yoki SL ni qisqartirishni ko\'rib chiqing.');
+  if (overall.maxLossStreak>=3) recs.push('Ketma-ket yo\'qotishlardan so\'ng savdo hajmini vaqtincha kamaytirish tavsiya etiladi.');
+  recs.push('Har bir savdodan so\'ng Notes maydoniga aniq sabab va his-tuyg\'ularingizni yozib boring — bu kelajakdagi tahlil sifatini oshiradi.');
+
+  var html = '';
+  html += aiBlock('Umumiy xulosa', iconBrain(),
+    '<p>Jami <b>'+overall.total+'</b> ta yakunlangan savdo tahlil qilindi. Win Rate: <b>'+fmtNum(overall.winRate,1)+'%</b>, '
+    +'umumiy natija: <b style="color:'+(overall.totalPnl>=0?'var(--bull)':'var(--bear)')+'">'+fmtMoney(overall.totalPnl)+'</b>, '
+    +'Profit Factor: <b>'+(isFinite(overall.profitFactor)?fmtNum(overall.profitFactor,2):'∞')+'</b>, Expectancy: <b>'+fmtMoney(overall.expectancy)+'</b> har bir savdo uchun.</p>');
+  html += aiBlock('Kuchli tomonlar', iconUp(), '<ul>'+strengths.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ul>');
+  html += aiBlock('Zaif tomonlar', iconDown(), '<ul>'+weaknesses.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ul>');
+  html += aiBlock('Kelgusi savdolar uchun tavsiyalar', iconStar(), '<ul>'+recs.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ul>');
+
+  container.innerHTML = html;
+}
+function aiBlock(title, icon, body){
+  return '<div class="glass ai-block"><h3><span class="ico">'+icon+'</span>'+title+'</h3>'+body+'</div>';
+}
+function iconBrain(){ return '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'; }
+function iconUp(){ return '<svg viewBox="0 0 24 24" fill="none"><path d="M3 17l6-6 4 4 8-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+function iconDown(){ return '<svg viewBox="0 0 24 24" fill="none"><path d="M3 7l6 6 4-4 8 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+function iconStar(){ return '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.6 6.6L21 10l-5.4 4.3L17 21l-5-3.6L7 21l1.4-6.7L3 10l6.4-1.4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'; }
+
+/* ============================================================
+   FILTER DROPDOWN POPULATION
+   ============================================================ */
+function populateFilterOptions(){
+  var sysSel = document.getElementById('fSystem');
+  if (sysSel){
+    var currentSysVal = sysSel.value;
+    sysSel.innerHTML = '<option value="">Barcha tizimlar</option>' + SYSTEMS.map(function(s){
+      return '<option value="'+escapeHtml(s)+'">'+escapeHtml(s)+'</option>';
+    }).join('');
+    if (SYSTEMS.indexOf(currentSysVal) !== -1) sysSel.value = currentSysVal;
+    else { sysSel.value = ''; filters.system = ''; }
+  }
+  var monthSel = document.getElementById('fMonth');
+  if (monthSel){
+    var months = {};
+    trades.forEach(function(t){
+      var d = new Date(t.datetime); if (isNaN(d.getTime())) return;
+      var key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      months[key] = true;
+    });
+    var current = monthSel.value;
+    monthSel.innerHTML = '<option value="">Barcha oylar</option>' + Object.keys(months).sort().reverse().map(function(k){
+      return '<option value="'+k+'">'+k+'</option>';
+    }).join('');
+    monthSel.value = current;
+  }
+}
+
+/* ============================================================
+   STORAGE INFO
+   ============================================================ */
+function renderStorageInfo(){
+  var infoEl = document.getElementById('storageInfo');
+  var bar = document.getElementById('storageBar');
+  if (!infoEl) return;
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY) || '';
+    var bytes = new Blob([raw]).size;
+    var kb = (bytes/1024).toFixed(1);
+    var approxLimitKb = 5120; // ~5MB typical
+    var pct = Math.min(100, (bytes/1024/approxLimitKb)*100);
+    infoEl.innerHTML = trades.length + ' ta savdo &middot; <b class="mono">' + kb + ' KB</b> ishlatilmoqda (taxminan 5MB limitdan)';
+    if (bar) bar.style.width = pct + '%';
+  }catch(e){
+    infoEl.textContent = 'Xotira ma\'lumotini olib bo\'lmadi.';
+  }
+}
+
+/* ============================================================
+   RULES / PRINCIPLES
+   ============================================================ */
+function renderRules(){
+  var wrap = document.getElementById('ruleList');
+  var empty = document.getElementById('ruleEmpty');
+  if (!wrap) return;
+  if (!RULES.length){
+    wrap.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  wrap.innerHTML = RULES.map(function(r, i){
+    return '<div class="rule-item"><span class="num">'+(i+1)+'.</span><span class="txt">'+escapeHtml(r)+'</span><button type="button" class="rule-rm" data-rmrule="'+i+'" title="O\'chirish">&times;</button></div>';
+  }).join('');
+  wrap.querySelectorAll('[data-rmrule]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = parseInt(btn.getAttribute('data-rmrule'), 10);
+      openConfirm('Qoidani o\'chirish', 'Ushbu qoidani ro\'yxatdan o\'chirishni tasdiqlaysizmi?', function(){
+        RULES.splice(idx, 1);
+        saveRulesList();
+        renderRules();
+        toast('Qoida o\'chirildi', 'ok');
+      });
+    });
+  });
+}
+renderRules();
+
+var newRuleInputEl = document.getElementById('newRuleInput');
+document.getElementById('addRuleBtn').addEventListener('click', function(){
+  var text = newRuleInputEl.value.trim();
+  if (!text){ toast('Qoida matnini kiriting', 'err'); return; }
+  RULES.push(text);
+  saveRulesList();
+  newRuleInputEl.value = '';
+  renderRules();
+  toast('Qoida qo\'shildi', 'ok');
+});
+newRuleInputEl.addEventListener('keydown', function(e){
+  if (e.key === 'Enter'){ e.preventDefault(); document.getElementById('addRuleBtn').click(); }
+});
+
+var principlesNoteEl = document.getElementById('principlesNote');
+var principlesSavedHintEl = document.getElementById('principlesSavedHint');
+principlesNoteEl.value = loadPrinciplesNote();
+function showPrinciplesSavedHint(){
+  var now = new Date();
+  var t = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  principlesSavedHintEl.textContent = 'Saqlandi: ' + t;
+}
+if (principlesNoteEl.value) showPrinciplesSavedHint();
+document.getElementById('savePrinciplesBtn').addEventListener('click', function(){
+  savePrinciplesNote(principlesNoteEl.value);
+  showPrinciplesSavedHint();
+  toast('Tamoyillar saqlandi', 'ok');
+});
+var principlesAutosaveTimer = null;
+principlesNoteEl.addEventListener('input', function(){
+  clearTimeout(principlesAutosaveTimer);
+  principlesAutosaveTimer = setTimeout(function(){
+    savePrinciplesNote(principlesNoteEl.value);
+    showPrinciplesSavedHint();
+  }, 1200);
+});
+
+/* ============================================================
+   SETTINGS: custom systems list
+   ============================================================ */
+function renderSettingsSystems(){
+  var wrap = document.getElementById('systemsSettingsList');
+  if (!wrap) return;
+  if (!SYSTEMS.length){
+    wrap.innerHTML = '<p style="color:var(--text-3);font-size:12.8px;">Tizimlar ro\'yxati bo\'sh. Yuqoridagi maydondan yangi tizim qo\'shing.</p>';
+    return;
+  }
+  wrap.innerHTML = SYSTEMS.map(function(s){
+    return '<div class="sys-tag"><span>'+escapeHtml(s)+'</span><button type="button" class="sys-rm" data-rmsys="'+escapeHtml(s)+'" title="O\'chirish">&times;</button></div>';
+  }).join('');
+  wrap.querySelectorAll('[data-rmsys]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var name = btn.getAttribute('data-rmsys');
+      openConfirm('Tizimni o\'chirish', '"'+name+'" tizimini ro\'yxatdan o\'chirishni tasdiqlaysizmi? Mavjud savdolardagi ushbu tizim yorlig\'i saqlanib qoladi.', function(){
+        SYSTEMS = SYSTEMS.filter(function(x){ return x !== name; });
+        saveSystemsList();
+        buildSystemChips(); syncSystemUI(); populateFilterOptions(); renderSettingsSystems();
+        toast('Tizim o\'chirildi', 'ok');
+      });
+    });
+  });
+}
+
+/* ============================================================
+   MASTER RENDER
+   ============================================================ */
+function renderAll(){
+  renderTicker();
+  renderStatCards();
+  renderTradeTable();
+  renderCharts();
+  renderAnalyticsCharts();
+  renderAnalyticsTables();
+  renderPeriodStats();
+  renderAI();
+  populateFilterOptions();
+  renderStorageInfo();
+  renderSettingsSystems();
+  updateUndoRedoButtons();
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+document.getElementById('tabs').addEventListener('click', function(e){
+  var btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var view = btn.getAttribute('data-view');
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  var target = document.getElementById('view-'+view);
+  if (target) target.classList.add('active');
+  // resize charts when tab becomes visible
+  setTimeout(function(){
+    Object.keys(CHARTS).forEach(function(k){ try{ CHARTS[k].resize(); }catch(err){} });
+  }, 50);
+});
+
+/* ============================================================
+   TRADE MODAL
+   ============================================================ */
+var tradeModalOverlay = document.getElementById('tradeModalOverlay');
+
+function resetTradeForm(){
+  document.getElementById('tradeId').value = '';
+  document.getElementById('tDatetime').value = nowLocalInputValue();
+  document.getElementById('tPair').value = '';
+  document.getElementById('tRR').value = '';
+  document.getElementById('tPnl').value = '';
+  document.getElementById('tNotes').value = '';
+  currentDir = 'Long';
+  currentStatus = 'open';
+  currentSession = '';
+  currentSystems = [];
+  currentShots = [];
+  syncDirUI(); syncStatusUI(); syncSessionUI(); syncSystemUI(); syncShotsUI();
+}
+
+function buildSystemChips(){
+  var wrap = document.getElementById('systemChips');
+  wrap.innerHTML = SYSTEMS.map(function(s){
+    return '<button type="button" class="chip" data-system="'+escapeHtml(s)+'">'+escapeHtml(s)+'</button>';
+  }).join('') + '<button type="button" class="chip" id="systemAddChip" style="border-style:dashed;color:var(--accent);">+ Yangi</button>';
+}
+buildSystemChips();
+
+function addSystemToList(name){
+  name = (name||'').trim();
+  if (!name){ toast('Tizim nomini kiriting', 'err'); return false; }
+  if (SYSTEMS.some(function(s){ return s.toLowerCase() === name.toLowerCase(); })){
+    toast('Bu tizim allaqachon ro\'yxatda bor', 'err'); return false;
+  }
+  SYSTEMS.push(name);
+  saveSystemsList();
+  buildSystemChips(); syncSystemUI(); populateFilterOptions(); renderSettingsSystems();
+  toast('Yangi tizim qo\'shildi: ' + name, 'ok');
+  return true;
+}
+
+document.getElementById('addSystemBtn').addEventListener('click', function(){
+  var input = document.getElementById('newSystemInput');
+  if (addSystemToList(input.value)) input.value = '';
+});
+document.getElementById('newSystemInput').addEventListener('keydown', function(e){
+  if (e.key === 'Enter'){ e.preventDefault(); document.getElementById('addSystemBtn').click(); }
+});
+
+document.getElementById('systemChips').addEventListener('click', function(e){
+  var addBtn = e.target.closest('#systemAddChip');
+  if (!addBtn) return;
+  document.getElementById('systemQuickAdd').style.display = 'flex';
+  var inp = document.getElementById('systemQuickAddInput');
+  inp.value = ''; inp.focus();
+});
+document.getElementById('systemQuickAddConfirm').addEventListener('click', function(){
+  var inp = document.getElementById('systemQuickAddInput');
+  var name = inp.value.trim();
+  if (addSystemToList(name)){
+    if (currentSystems.indexOf(name) === -1) currentSystems.push(name);
+    syncSystemUI();
+    document.getElementById('systemQuickAdd').style.display = 'none';
+  }
+});
+document.getElementById('systemQuickAddCancel').addEventListener('click', function(){
+  document.getElementById('systemQuickAdd').style.display = 'none';
+});
+document.getElementById('systemQuickAddInput').addEventListener('keydown', function(e){
+  if (e.key === 'Enter'){ e.preventDefault(); document.getElementById('systemQuickAddConfirm').click(); }
+  if (e.key === 'Escape'){ e.preventDefault(); document.getElementById('systemQuickAddCancel').click(); }
+});
+document.getElementById('resetSystemsBtn').addEventListener('click', function(){
+  openConfirm('Standart ro\'yxatga qaytarish', 'Tizimlar ro\'yxatini standart holatga qaytarishni tasdiqlaysizmi?', function(){
+    SYSTEMS = DEFAULT_SYSTEMS.slice();
+    saveSystemsList();
+    buildSystemChips(); syncSystemUI(); populateFilterOptions(); renderSettingsSystems();
+    toast('Standart ro\'yxat tiklandi', 'ok');
+  });
+});
+
+function syncDirUI(){
+  document.querySelectorAll('.sel-long,.sel-short').forEach(function(b){ b.classList.remove('active'); });
+  var el = document.querySelector('[data-dir="'+currentDir+'"]');
+  if (el) el.classList.add('active');
+}
+function syncStatusUI(){
+  document.querySelectorAll('#statusGrid button').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-s') === currentStatus);
+  });
+}
+function syncSessionUI(){
+  document.querySelectorAll('#sessionChips .chip').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-session') === currentSession);
+  });
+}
+function syncSystemUI(){
+  document.querySelectorAll('#systemChips .chip').forEach(function(b){
+    b.classList.toggle('active', currentSystems.indexOf(b.getAttribute('data-system')) !== -1);
+  });
+}
+function syncShotsUI(){
+  var grid = document.getElementById('thumbGrid');
+  grid.innerHTML = currentShots.map(function(src, idx){
+    return '<div class="thumb" data-idx="'+idx+'"><img src="'+src+'" alt="shot"><button type="button" class="rm" data-rm="'+idx+'">&times;</button></div>';
+  }).join('');
+  grid.querySelectorAll('.thumb img').forEach(function(img){
+    img.addEventListener('click', function(){
+      document.getElementById('lightboxImg').src = img.src;
+      document.getElementById('lightbox').classList.add('active');
+    });
+  });
+  grid.querySelectorAll('[data-rm]').forEach(function(btn){
+    btn.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      var idx = parseInt(btn.getAttribute('data-rm'), 10);
+      currentShots.splice(idx, 1);
+      syncShotsUI();
+    });
+  });
+}
+
+document.querySelectorAll('.sel-long,.sel-short').forEach(function(b){
+  b.addEventListener('click', function(){ currentDir = b.getAttribute('data-dir'); syncDirUI(); });
+});
+document.getElementById('statusGrid').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if (!b) return;
+  currentStatus = b.getAttribute('data-s'); syncStatusUI();
+});
+document.getElementById('sessionChips').addEventListener('click', function(e){
+  var b = e.target.closest('.chip'); if (!b) return;
+  var s = b.getAttribute('data-session');
+  currentSession = (currentSession === s) ? '' : s;
+  syncSessionUI();
+});
+document.getElementById('systemChips').addEventListener('click', function(e){
+  var b = e.target.closest('.chip'); if (!b) return;
+  var s = b.getAttribute('data-system');
+  if (!s) return;
+  var idx = currentSystems.indexOf(s);
+  if (idx === -1) currentSystems.push(s); else currentSystems.splice(idx,1);
+  syncSystemUI();
+});
+
+function openTradeModal(id){
+  resetTradeForm();
+  if (id){
+    var t = trades.find(function(x){ return x.id === id; });
+    if (t){
+      document.getElementById('tradeModalTitle').textContent = 'Savdoni tahrirlash';
+      document.getElementById('tradeId').value = t.id;
+      document.getElementById('tDatetime').value = t.datetime ? t.datetime.slice(0,16) : nowLocalInputValue();
+      document.getElementById('tPair').value = t.pair || '';
+      document.getElementById('tRR').value = (t.rr!==undefined && t.rr!==null && t.rr!==0) ? t.rr : '';
+      document.getElementById('tPnl').value = (t.pnl!==undefined && t.pnl!==null) ? t.pnl : '';
+      document.getElementById('tNotes').value = t.notes || '';
+      currentDir = t.direction || 'Long';
+      currentStatus = t.status || 'open';
+      currentSession = t.session || '';
+      currentSystems = (t.systems || []).slice();
+      currentShots = (t.screenshots || []).slice();
+      syncDirUI(); syncStatusUI(); syncSessionUI(); syncSystemUI(); syncShotsUI();
+    }
+  } else {
+    document.getElementById('tradeModalTitle').textContent = 'Yangi savdo';
+  }
+  tradeModalOverlay.classList.add('active');
+}
+function closeTradeModal(){ tradeModalOverlay.classList.remove('active'); }
+
+document.getElementById('btnNewTrade').addEventListener('click', function(){ openTradeModal(null); });
+document.getElementById('closeTradeModal').addEventListener('click', closeTradeModal);
+document.getElementById('cancelTrade').addEventListener('click', closeTradeModal);
+tradeModalOverlay.addEventListener('click', function(e){ if (e.target === tradeModalOverlay) closeTradeModal(); });
+
+document.getElementById('saveTrade').addEventListener('click', function(){
+  var pair = document.getElementById('tPair').value.trim().toUpperCase();
+  var datetimeVal = document.getElementById('tDatetime').value;
+  if (!pair){ toast('Valyuta juftligini kiriting', 'err'); return; }
+  if (!datetimeVal){ toast('Sana va vaqtni kiriting', 'err'); return; }
+
+  var rr = calcRR(document.getElementById('tRR').value);
+
+  var data = {
+    id: document.getElementById('tradeId').value || uid(),
+    datetime: new Date(datetimeVal).toISOString(),
+    pair: pair,
+    direction: currentDir,
+    rr: rr,
+    pnl: document.getElementById('tPnl').value === '' ? 0 : parseFloat(document.getElementById('tPnl').value),
+    status: currentStatus,
+    systems: currentSystems.slice(),
+    session: currentSession,
+    notes: document.getElementById('tNotes').value,
+    screenshots: currentShots.slice(),
+    updatedAt: new Date().toISOString()
+  };
+
+  var existingId = document.getElementById('tradeId').value;
+  recordHistory();
+  if (existingId){
+    var idx = trades.findIndex(function(t){ return t.id === existingId; });
+    if (idx !== -1){
+      data.createdAt = trades[idx].createdAt || data.updatedAt;
+      trades[idx] = data;
+    }
+  } else {
+    data.createdAt = data.updatedAt;
+    trades.unshift(data);
+  }
+  persist();
+  closeTradeModal();
+  renderAll();
+  toast(existingId ? 'Savdo yangilandi' : 'Yangi savdo qo\'shildi', 'ok');
+});
+
+/* ============================================================
+   SCREENSHOT HANDLING
+   ============================================================ */
+document.querySelectorAll('.shot-tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.shot-tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.shot-pane').forEach(function(p){ p.classList.remove('active'); });
+    tab.classList.add('active');
+    var target = document.querySelector('.shot-pane[data-pane="'+tab.getAttribute('data-pane')+'"]');
+    if (target) target.classList.add('active');
+  });
+});
+
+function addShotFromFile(file){
+  if (!file || file.type.indexOf('image/') !== 0) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    currentShots.push(e.target.result);
+    syncShotsUI();
+  };
+  reader.onerror = function(){ toast('Rasmni o\'qishda xatolik', 'err'); };
+  reader.readAsDataURL(file);
+}
+
+var dropzone = document.getElementById('dropzone');
+var fileInput = document.getElementById('fileInput');
+dropzone.addEventListener('click', function(){ fileInput.click(); });
+fileInput.addEventListener('change', function(){
+  Array.prototype.forEach.call(fileInput.files, addShotFromFile);
+  fileInput.value = '';
+});
+['dragenter','dragover'].forEach(function(ev){
+  dropzone.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); dropzone.classList.add('drag'); });
+});
+['dragleave','drop'].forEach(function(ev){
+  dropzone.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); dropzone.classList.remove('drag'); });
+});
+dropzone.addEventListener('drop', function(e){
+  var files = e.dataTransfer ? e.dataTransfer.files : [];
+  Array.prototype.forEach.call(files, addShotFromFile);
+});
+
+document.getElementById('addUrlShot').addEventListener('click', function(){
+  var input = document.getElementById('urlInput');
+  var url = input.value.trim();
+  if (!url){ toast('URL manzilini kiriting', 'err'); return; }
+  currentShots.push(url);
+  input.value = '';
+  syncShotsUI();
+});
+
+var pasteZone = document.getElementById('pasteZone');
+pasteZone.setAttribute('tabindex', '0');
+document.addEventListener('paste', function(e){
+  if (!tradeModalOverlay.classList.contains('active')) return;
+  var items = e.clipboardData ? e.clipboardData.items : [];
+  var found = false;
+  for (var i=0; i<items.length; i++){
+    if (items[i].type && items[i].type.indexOf('image/') === 0){
+      var file = items[i].getAsFile();
+      addShotFromFile(file);
+      found = true;
+    }
+  }
+  if (found) toast('Rasm qo\'shildi (clipboard)', 'ok');
+});
+
+document.getElementById('closeLightbox').addEventListener('click', function(){
+  document.getElementById('lightbox').classList.remove('active');
+});
+document.getElementById('lightbox').addEventListener('click', function(e){
+  if (e.target.id === 'lightbox') document.getElementById('lightbox').classList.remove('active');
+});
+
+/* ============================================================
+   NOTE VIEW MODAL — quick read-only look at a trade's zametka
+   ============================================================ */
+var noteViewOverlay = document.getElementById('noteViewOverlay');
+var noteViewCurrentId = null;
+function openNoteView(id){
+  var t = trades.find(function(x){ return x.id === id; });
+  if (!t) return;
+  noteViewCurrentId = id;
+  document.getElementById('noteViewTitle').textContent = (t.pair||'Savdo') + ' — zametka';
+  document.getElementById('noteViewText').textContent = (t.notes && t.notes.trim()) ? t.notes : 'Bu savdo uchun zametka kiritilmagan.';
+  noteViewOverlay.classList.add('active');
+}
+function closeNoteView(){ noteViewOverlay.classList.remove('active'); noteViewCurrentId = null; }
+document.getElementById('closeNoteView').addEventListener('click', closeNoteView);
+document.getElementById('noteViewCloseBtn').addEventListener('click', closeNoteView);
+noteViewOverlay.addEventListener('click', function(e){ if (e.target === noteViewOverlay) closeNoteView(); });
+
+var shotsViewOverlay = document.getElementById('shotsViewOverlay');
+var shotsViewCurrentId = null;
+function openShotsView(id){
+  var t = trades.find(function(x){ return x.id === id; }); if (!t) return;
+  shotsViewCurrentId = id;
+  document.getElementById('shotsViewTitle').textContent = (t.pair||'Savdo') + ' — rasmlar';
+  var grid = document.getElementById('shotsViewGrid');
+  var empty = document.getElementById('shotsViewEmpty');
+  var shots = t.screenshots || [];
+  if (!shots.length){
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    grid.innerHTML = shots.map(function(src){
+      return '<div class="thumb"><img src="'+src+'" alt="shot"></div>';
+    }).join('');
+    grid.querySelectorAll('.thumb img').forEach(function(img){
+      img.addEventListener('click', function(){
+        document.getElementById('lightboxImg').src = img.src;
+        document.getElementById('lightbox').classList.add('active');
+      });
+    });
+  }
+  shotsViewOverlay.classList.add('active');
+}
+function closeShotsView(){ shotsViewOverlay.classList.remove('active'); shotsViewCurrentId = null; }
+document.getElementById('closeShotsView').addEventListener('click', closeShotsView);
+document.getElementById('shotsViewCloseBtn').addEventListener('click', closeShotsView);
+shotsViewOverlay.addEventListener('click', function(e){ if (e.target === shotsViewOverlay) closeShotsView(); });
+document.getElementById('shotsViewEditBtn').addEventListener('click', function(){
+  var id = shotsViewCurrentId;
+  closeShotsView();
+  if (id) openTradeModal(id);
+});
+
+document.getElementById('noteViewEditBtn').addEventListener('click', function(){
+  var id = noteViewCurrentId;
+  closeNoteView();
+  if (id) openTradeModal(id);
+});
+
+/* ============================================================
+   CONFIRM MODAL
+   ============================================================ */
+var confirmOverlay = document.getElementById('confirmOverlay');
+function openConfirm(title, text, cb){
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmText').textContent = text;
+  confirmCallback = cb;
+  confirmOverlay.classList.add('active');
+}
+function closeConfirm(){ confirmOverlay.classList.remove('active'); confirmCallback = null; }
+document.getElementById('closeConfirm').addEventListener('click', closeConfirm);
+document.getElementById('confirmCancel').addEventListener('click', closeConfirm);
+confirmOverlay.addEventListener('click', function(e){ if (e.target === confirmOverlay) closeConfirm(); });
+document.getElementById('confirmOk').addEventListener('click', function(){
+  var cb = confirmCallback;
+  closeConfirm();
+  if (typeof cb === 'function') cb();
+});
+
+/* ============================================================
+   FILTERS
+   ============================================================ */
+document.getElementById('fSearch').addEventListener('input', function(){ filters.search = this.value; renderTradeTable(); });
+document.getElementById('fSession').addEventListener('change', function(){ filters.session = this.value; renderTradeTable(); });
+document.getElementById('fSystem').addEventListener('change', function(){ filters.system = this.value; renderTradeTable(); });
+document.getElementById('fStatus').addEventListener('change', function(){ filters.status = this.value; renderTradeTable(); });
+document.getElementById('fMonth').addEventListener('change', function(){ filters.month = this.value; renderTradeTable(); });
+document.getElementById('btnClearFilters').addEventListener('click', function(){
+  filters = { search:'', session:'', system:'', status:'', month:'' };
+  document.getElementById('fSearch').value = '';
+  document.getElementById('fSession').value = '';
+  document.getElementById('fSystem').value = '';
+  document.getElementById('fStatus').value = '';
+  document.getElementById('fMonth').value = '';
+  renderTradeTable();
+});
+
+/* ============================================================
+   UNDO / REDO
+   ============================================================ */
+document.getElementById('btnUndo').addEventListener('click', undo);
+document.getElementById('btnRedo').addEventListener('click', redo);
+document.addEventListener('keydown', function(e){
+  var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+  var typing = (tag === 'input' || tag === 'textarea' || tag === 'select');
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z') && !e.shiftKey){
+    if (typing) return;
+    e.preventDefault(); undo();
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || e.key === 'Y')){
+    if (typing) return;
+    e.preventDefault(); redo();
+  }
+  if (e.key === 'Escape'){
+    if (tradeModalOverlay.classList.contains('active')) closeTradeModal();
+    if (confirmOverlay.classList.contains('active')) closeConfirm();
+    if (noteViewOverlay.classList.contains('active')) closeNoteView();
+    if (shotsViewOverlay.classList.contains('active')) closeShotsView();
+    var lb = document.getElementById('lightbox');
+    if (lb.classList.contains('active')) lb.classList.remove('active');
+  }
+});
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+document.getElementById('expJson').addEventListener('click', function(){
+  downloadBlob(JSON.stringify(trades, null, 2), 'trading-journal-' + Date.now() + '.json', 'application/json');
+  toast('JSON fayl yuklab olindi', 'ok');
+});
+
+function tradesToCsvRows(){
+  var headers = ['id','datetime','pair','direction','rr','pnl','status','systems','session','notes'];
+  var rows = [headers.join(',')];
+  trades.forEach(function(t){
+    var row = [
+      t.id, t.datetime, t.pair, t.direction,
+      t.rr, t.pnl, t.status, (t.systems||[]).join(';'), t.session, (t.notes||'').replace(/[\r\n]+/g,' ')
+    ].map(function(v){
+      var s = (v===undefined||v===null) ? '' : String(v);
+      if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1) s = '"' + s.replace(/"/g,'""') + '"';
+      return s;
+    });
+    rows.push(row.join(','));
+  });
+  return rows.join('\n');
+}
+document.getElementById('expCsv').addEventListener('click', function(){
+  downloadBlob(tradesToCsvRows(), 'trading-journal-' + Date.now() + '.csv', 'text/csv');
+  toast('CSV fayl yuklab olindi', 'ok');
+});
+
+document.getElementById('expXlsx').addEventListener('click', function(){
+  if (!HAS_XLSX){ toast('Excel kutubxonasi yuklanmadi (internet aloqasini tekshiring)', 'err'); return; }
+  try{
+    var rows = trades.map(function(t){
+      return {
+        Sana: t.datetime, Juftlik: t.pair, Yonalish: t.direction,
+        RR: t.rr, 'P/L': t.pnl, Status: t.status, Tizim: (t.systems||[]).join(', '), Sessiya: t.session, Notes: t.notes
+      };
+    });
+    var ws = XLSX.utils.json_to_sheet(rows);
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Trades');
+    XLSX.writeFile(wb, 'trading-journal-' + Date.now() + '.xlsx');
+    toast('Excel fayl yuklab olindi', 'ok');
+  }catch(e){
+    console.error('XLSX export error:', e);
+    toast('Excel eksportida xatolik: ' + e.message, 'err');
+  }
+});
+
+document.getElementById('expPdf').addEventListener('click', function(){
+  if (!HAS_JSPDF){ toast('PDF kutubxonasi yuklanmadi (internet aloqasini tekshiring)', 'err'); return; }
+  try{
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ orientation:'landscape', unit:'pt' });
+    var st = computeStats(trades);
+    doc.setFontSize(16); doc.text('Trading Journal Hisoboti', 40, 40);
+    doc.setFontSize(10);
+    doc.text('Total: ' + st.total + '   Win Rate: ' + fmtNum(st.winRate,1) + '%   P/L: ' + fmtMoney(st.totalPnl) + '   Profit Factor: ' + (isFinite(st.profitFactor)?fmtNum(st.profitFactor,2):'inf'), 40, 58);
+
+    var headers = ['Sana','Juftlik','Yonalish','RR','P/L','Status','Tizim','Sessiya'];
+    var colX = [40,130,200,255,300,350,400,530];
+    var y = 85;
+    doc.setFont(undefined,'bold'); doc.setFontSize(9);
+    headers.forEach(function(h,i){ doc.text(h, colX[i], y); });
+    doc.setFont(undefined,'normal');
+    y += 14;
+    var sorted = trades.slice().sort(function(a,b){ return new Date(b.datetime)-new Date(a.datetime); });
+    sorted.forEach(function(t){
+      if (y > 560){ doc.addPage(); y = 40; }
+      var d = new Date(t.datetime);
+      var dateStr = isNaN(d.getTime()) ? '-' : (d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+      var vals = [dateStr, t.pair||'-', t.direction||'-', fmtNum(t.rr,2), fmtMoney(parseFloat(t.pnl)||0), t.status||'-', (t.systems||[]).join('+')||'-', t.session||'-'];
+      vals.forEach(function(v,i){ doc.text(String(v).slice(0,18), colX[i], y); });
+      y += 13;
+    });
+    doc.save('trading-journal-' + Date.now() + '.pdf');
+    toast('PDF fayl yuklab olindi', 'ok');
+  }catch(e){
+    console.error('PDF export error:', e);
+    toast('PDF eksportida xatolik: ' + e.message, 'err');
+  }
+});
+
+/* ============================================================
+   IMPORT
+   ============================================================ */
+document.getElementById('btnImpJson').addEventListener('click', function(){ document.getElementById('impJson').click(); });
+document.getElementById('impJson').addEventListener('change', function(){
+  var file = this.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var parsed = JSON.parse(e.target.result);
+      if (!Array.isArray(parsed)) throw new Error('Fayl formati noto\'g\'ri (massiv kutilgan)');
+      openConfirm('JSON import', parsed.length + ' ta savdo topildi. Mavjud ma\'lumotlarga qo\'shilsinmi?', function(){
+        recordHistory();
+        var existingIds = {}; trades.forEach(function(t){ existingIds[t.id]=true; });
+        parsed.forEach(function(t){
+          if (!t.id || existingIds[t.id]) t.id = uid();
+          trades.push(t);
+        });
+        persist(); renderAll();
+        toast('Import muvaffaqiyatli yakunlandi', 'ok');
+      });
+    }catch(err){
+      console.error('JSON import error:', err);
+      toast('JSON faylni o\'qishda xatolik: ' + err.message, 'err');
+    }
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
+
+function parseCsv(text){
+  var lines = text.split(/\r?\n/).filter(function(l){ return l.trim() !== ''; });
+  if (!lines.length) return [];
+  var headers = splitCsvLine(lines[0]);
+  return lines.slice(1).map(function(line){
+    var vals = splitCsvLine(line);
+    var obj = {};
+    headers.forEach(function(h,i){ obj[h] = vals[i] !== undefined ? vals[i] : ''; });
+    return obj;
+  });
+}
+function splitCsvLine(line){
+  var result = [], cur = '', inQuotes = false;
+  for (var i=0;i<line.length;i++){
+    var c = line[i];
+    if (inQuotes){
+      if (c === '"'){
+        if (line[i+1] === '"'){ cur += '"'; i++; } else { inQuotes = false; }
+      } else cur += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ','){ result.push(cur); cur=''; }
+      else cur += c;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+document.getElementById('btnImpCsv').addEventListener('click', function(){ document.getElementById('impCsv').click(); });
+document.getElementById('impCsv').addEventListener('change', function(){
+  var file = this.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var rows = parseCsv(e.target.result);
+      openConfirm('CSV import', rows.length + ' ta qator topildi. Mavjud ma\'lumotlarga qo\'shilsinmi?', function(){
+        recordHistory();
+        rows.forEach(function(r){
+          trades.push({
+            id: uid(),
+            datetime: r.datetime ? new Date(r.datetime).toISOString() : new Date().toISOString(),
+            pair: r.pair || '',
+            direction: r.direction || 'Long',
+            rr: r.rr ? calcRR(r.rr) : 0,
+            pnl: r.pnl ? parseFloat(r.pnl) : 0,
+            status: r.status || 'open',
+            systems: r.systems ? r.systems.split(';').filter(Boolean) : [],
+            session: r.session || '',
+            notes: r.notes || '',
+            screenshots: [],
+            createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+          });
+        });
+        persist(); renderAll();
+        toast('CSV import yakunlandi', 'ok');
+      });
+    }catch(err){
+      console.error('CSV import error:', err);
+      toast('CSV faylni o\'qishda xatolik: ' + err.message, 'err');
+    }
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
+
+document.getElementById('btnClearAll').addEventListener('click', function(){
+  openConfirm('Barcha ma\'lumotlarni o\'chirish', 'Diqqat! Bu amal barcha savdolarni butunlay o\'chiradi. Bu amalni faqat Undo (Ctrl+Z) orqali darhol qaytarish mumkin. Davom etasizmi?', function(){
+    recordHistory();
+    trades = [];
+    persist(); renderAll();
+    toast('Barcha ma\'lumotlar o\'chirildi', 'ok');
+  });
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init(){
+  loadTrades();
+  resetTradeForm();
+  renderAll();
+  updateUndoRedoButtons();
+
+  loadAllLibraries().then(function(){
+    if (!HAS_CHART){ console.warn('Chart.js yuklanmadi — grafiklar ko\'rsatilmaydi.'); toast('Grafik kutubxonasi yuklanmadi, internetni tekshiring', 'err'); }
+    if (!HAS_JSPDF) console.warn('jsPDF yuklanmadi — PDF eksport ishlamaydi.');
+    if (!HAS_XLSX) console.warn('SheetJS yuklanmadi — Excel eksport ishlamaydi.');
+    // libraries may have taken a moment to arrive — re-render everything
+    // that depends on them now that they are (hopefully) available.
+    renderCharts();
+    renderAnalyticsCharts();
+  }).catch(function(err){
+    console.error('Library loading error:', err);
+  });
+}
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script>
+</body>
+</html>
